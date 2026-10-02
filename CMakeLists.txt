@@ -5,7 +5,10 @@ find_package(glfw3 REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(PAINRenderer main.cpp)
+add_executable(PAINRenderer 
+    main.cpp
+    glad.c
+)
 
 target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
