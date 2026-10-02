@@ -1,8 +1,0 @@
-[
-{
-  "directory": "/home/astra/Desktop/Projects/C++/PAIN Renderer/out/build/Vulcan Preset",
-  "command": "/usr/bin/g++   -g -o CMakeFiles/PAINRenderer.dir/main.cpp.o -c \"/home/astra/Desktop/Projects/C++/PAIN Renderer/main.cpp\"",
-  "file": "/home/astra/Desktop/Projects/C++/PAIN Renderer/main.cpp",
-  "output": "CMakeFiles/PAINRenderer.dir/main.cpp.o"
-}
-]
