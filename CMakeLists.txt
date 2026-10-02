@@ -13,6 +13,7 @@ add_executable(PAINRenderer
     ebo.cpp
     vao.cpp
     camera.cpp
+    mesh.cpp
 )
 
 add_custom_command(

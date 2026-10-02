@@ -6,26 +6,35 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shader.h"
-#include "vao.h"
-#include "ebo.h"
-#include "camera.h"
+#include "mesh.h"
 
-int width = 1000;
-int height = 1000;
+int width = 1280;
+int height = 720;
 const char* title = "PAIN Renderer";
 GLFWwindow* window;
 
 Vertex testVertices[] = { 
                     //Coordinates                    //Color
-	Vertex{glm::vec3(-0.1f, -0.1f,  0.1f),  glm::vec3(1.0f, 0.0f, 0.0f)},
-	Vertex{glm::vec3(-0.1f, -0.1f, -0.1f),  glm::vec3(1.0f, 1.0f, 0.0f)},
-	Vertex{glm::vec3(0.1f, -0.1f, -0.1f),   glm::vec3(1.0f, 0.0f, 1.0f)},
-	Vertex{glm::vec3(0.1f, -0.1f,  0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)},
-	Vertex{glm::vec3(-0.1f,  0.1f,  0.1f),  glm::vec3(0.0f, 1.0f, 0.0f)},
-	Vertex{glm::vec3(-0.1f,  0.1f, -0.1f),  glm::vec3(0.0f, 1.0f, 1.0f)},
-	Vertex{glm::vec3(0.1f,  0.1f, -0.1f),   glm::vec3(1.0f, 0.5f, 0.5f)},
-	Vertex{glm::vec3(0.1f,  0.1f,  0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)}
+	Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),  glm::vec3(1.0f, 0.0f, 0.0f)},
+	Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),  glm::vec3(1.0f, 1.0f, 0.0f)},
+	Vertex{glm::vec3(0.5f, -0.5f, -0.5f),   glm::vec3(1.0f, 0.0f, 1.0f)},
+	Vertex{glm::vec3(0.5f, -0.5f,  0.5f),   glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),  glm::vec3(0.0f, 1.0f, 0.0f)},
+	Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),  glm::vec3(0.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(0.5f,  0.5f, -0.5f),   glm::vec3(1.0f, 0.5f, 0.5f)},
+	Vertex{glm::vec3(0.5f,  0.5f,  0.5f),   glm::vec3(1.0f, 1.0f, 1.0f)}
+};
+
+Vertex testLightVertices[] = { 
+                    //Coordinates                     //Color
+	Vertex{glm::vec3(-0.1f, -0.1f,  0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(-0.1f, -0.1f, -0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(0.1f, -0.1f, -0.1f),    glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(0.1f, -0.1f,  0.1f),    glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(-0.1f,  0.1f,  0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(-0.1f,  0.1f, -0.1f),   glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(0.1f,  0.1f, -0.1f),    glm::vec3(1.0f, 1.0f, 1.0f)},
+	Vertex{glm::vec3(0.1f,  0.1f,  0.1f),    glm::vec3(1.0f, 1.0f, 1.0f)}
 };
 
 GLuint testIndices[] = {
@@ -42,6 +51,11 @@ GLuint testIndices[] = {
 	4, 5, 6,
 	4, 6, 7
 };
+
+std::vector <Vertex> testVerts(testVertices, testVertices + sizeof(testVertices) / sizeof(Vertex));
+std::vector <Vertex> testLightVerts(testLightVertices, testLightVertices + sizeof(testLightVertices) / sizeof(Vertex));
+
+std::vector <GLuint> testInd(testIndices, testIndices + sizeof(testIndices) / sizeof(GLuint));
 
 int main(int, char**){
     glfwInit();
@@ -67,31 +81,22 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
     Shader testShader("shaders/test.vert", "shaders/test.frag");
-    std::vector <Vertex> testVerts(testVertices, testVertices + sizeof(testVertices) / sizeof(Vertex));
-    std::vector <GLuint> testInd(testIndices, testIndices + sizeof(testIndices) / sizeof(GLuint));
 
-    VAO testVAO;
+    Mesh testCube(testVerts, testInd);
 
-    testVAO.Bind();
+    Mesh lightCube(testLightVerts, testInd);
 
-    VBO testVBO(testVerts);
-    EBO testEBO(testInd);
-
-    testVAO.LinkAttrib(testVBO, 0, 3, GL_FLOAT, sizeof(Vertex), 0);
-    testVAO.LinkAttrib(testVBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)(3 * sizeof(float)));
-
-    testVAO.Unbind();
-    testVBO.Unbind();
-    testEBO.Unbind();
+    glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
 
     glm::vec3 testPos = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::mat4 testModel = glm::mat4(1.0f);
-    testModel = glm::translate(testModel, testPos);
+    glm::mat4 testCubeModel = glm::mat4(1.0f);
+    testCubeModel = glm::translate(testCubeModel, testPos);
 
-    testShader.Activate();
-    glUniformMatrix4fv(glGetUniformLocation(testShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(testModel));
-    testShader.Deactivate();
+    glm::mat4 lightCubeModel = glm::mat4(1.0f);
+    lightCubeModel = glm::translate(lightCubeModel, lightPos);
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
@@ -106,26 +111,15 @@ int main(int, char**){
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
         camera.Inputs(window);
 
-        testShader.Activate();
-        
-        testVAO.Bind();
-
-        camera.Matrix(testShader, "camMatrix");
-
-        glDrawElements(GL_TRIANGLES, sizeof(testIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
-
-        testVAO.Unbind();
-
-        testShader.Deactivate();
+        testCube.Draw(testShader, camera, testCubeModel);
+        lightCube.Draw(testShader, camera, lightCubeModel);
 
         glfwSwapBuffers(window);
 
         glfwPollEvents();
     }
 
-    testEBO.Delete();
-    testVBO.Delete();
-    testVAO.Delete();
+    testCube.Delete();
     testShader.Delete();
 
     glfwTerminate();
