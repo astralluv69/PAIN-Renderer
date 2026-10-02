@@ -1,0 +1,3 @@
+/home/astra/Desktop/Projects/C++/PAIN Renderer/out/build/Vulcan Preset/CMakeFiles/PAINRenderer.dir
+/home/astra/Desktop/Projects/C++/PAIN Renderer/out/build/Vulcan Preset/CMakeFiles/edit_cache.dir
+/home/astra/Desktop/Projects/C++/PAIN Renderer/out/build/Vulcan Preset/CMakeFiles/rebuild_cache.dir
