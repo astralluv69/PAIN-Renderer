@@ -12,6 +12,7 @@ add_executable(PAINRenderer
     vbo.cpp
     ebo.cpp
     vao.cpp
+    camera.cpp
 )
 
 add_custom_command(
