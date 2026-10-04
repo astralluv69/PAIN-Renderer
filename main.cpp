@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <chrono>
 
 #include "mesh.h"
 
@@ -15,35 +16,35 @@ GLFWwindow* window;
 
 Vertex testVertices[] = { 
                      //Coordinates                         //Color                       //Normals
-	Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f,  1.0f)},
-	Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f,  1.0f)},
-	Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f,  1.0f)},
-	Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f,  1.0f)},
+	Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(0.69f, 1.0f, 0.73f),   glm::vec3( 0.0f,  0.0f,  1.0f)}, // Front Bottom Left   1
+	Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 0.69f, 0.77f),   glm::vec3( 0.0f,  0.0f,  1.0f)}, // Front Bottom Right  2
+	Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(0.56f, 0.36f, 0.87f),  glm::vec3( 0.0f,  0.0f,  1.0f)}, // Front Top Right     3
+	Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(0.94f, 0.93f, 0.6f),   glm::vec3( 0.0f,  0.0f,  1.0f)}, // Front Top Left      4
 
-	Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f, -1.0f)},
-	Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f, -1.0f)},
-	Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f, -1.0f)},
-	Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  0.0f, -1.0f)},
+	Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(0.36f, 0.87f, 0.78f),  glm::vec3( 0.0f,  0.0f, -1.0f)}, // Back Face           5
+	Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(0.68f, 0.25f, 0.18f),  glm::vec3( 0.0f,  0.0f, -1.0f)}, //                     6
+	Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(0.42f, 1.0f, 0.82f),   glm::vec3( 0.0f,  0.0f, -1.0f)}, //                     7
+	Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(0.1f, 0.36f, 0.63f),   glm::vec3( 0.0f,  0.0f, -1.0f)}, //                     8
 
-    Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  1.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  1.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  1.0f,  0.0f)},
-    Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f,  1.0f,  0.0f)},
+    Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(0.94f, 0.93f, 0.6f),   glm::vec3( 0.0f,  1.0f,  0.0f)}, // Top Face            4
+    Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(0.56f, 0.36f, 0.87f),  glm::vec3( 0.0f,  1.0f,  0.0f)}, //                     3
+    Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(0.1f, 0.36f, 0.63f),   glm::vec3( 0.0f,  1.0f,  0.0f)}, //                     8
+    Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(0.42f, 1.0f, 0.82f),   glm::vec3( 0.0f,  1.0f,  0.0f)}, //                     7
 
-    Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f, -1.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f, -1.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f, -1.0f,  0.0f)},
-    Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 0.0f, -1.0f,  0.0f)},
+    Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(0.68f, 0.25f, 0.18f),  glm::vec3( 0.0f, -1.0f,  0.0f)}, // Bottom Face         6
+    Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(0.36f, 0.87f, 0.78f),  glm::vec3( 0.0f, -1.0f,  0.0f)}, //                     5
+    Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 0.69f, 0.77f),   glm::vec3( 0.0f, -1.0f,  0.0f)}, //                     2
+    Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(0.69f, 1.0f, 0.73f),   glm::vec3( 0.0f, -1.0f,  0.0f)}, //                     1
 
-    Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3( 1.0f,  0.0f,  0.0f)},
+    Vertex{glm::vec3( 0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 0.69f, 0.77f),   glm::vec3( 1.0f,  0.0f,  0.0f)}, // Right Face          2
+    Vertex{glm::vec3( 0.5f, -0.5f, -0.5f),       glm::vec3(0.36f, 0.87f, 0.78f),  glm::vec3( 1.0f,  0.0f,  0.0f)}, //                     5
+    Vertex{glm::vec3( 0.5f,  0.5f, -0.5f),       glm::vec3(0.1f, 0.36f, 0.63f),   glm::vec3( 1.0f,  0.0f,  0.0f)}, //                     8
+    Vertex{glm::vec3( 0.5f,  0.5f,  0.5f),       glm::vec3(0.56f, 0.36f, 0.87f),  glm::vec3( 1.0f,  0.0f,  0.0f)}, //                     3
 
-    Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f)},
-    Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(1.0f, 1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f)}
+    Vertex{glm::vec3(-0.5f, -0.5f, -0.5f),       glm::vec3(0.68f, 0.25f, 0.18f),  glm::vec3(-1.0f,  0.0f,  0.0f)}, // left Face           6
+    Vertex{glm::vec3(-0.5f, -0.5f,  0.5f),       glm::vec3(0.69f, 1.0f, 0.73f),   glm::vec3(-1.0f,  0.0f,  0.0f)}, //                     1
+    Vertex{glm::vec3(-0.5f,  0.5f,  0.5f),       glm::vec3(0.94f, 0.93f, 0.6f),   glm::vec3(-1.0f,  0.0f,  0.0f)}, //                     4
+    Vertex{glm::vec3(-0.5f,  0.5f, -0.5f),       glm::vec3(0.42f, 1.0f, 0.82f),   glm::vec3(-1.0f,  0.0f,  0.0f)}  //                     7
 };
 
 Vertex testLightVertices[] = { 
@@ -135,14 +136,26 @@ int main(int, char**){
     glfwSwapInterval(1);
 
     Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+    
+    double end;
+    double begin = glfwGetTime();
+    double dt = -1;
 
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
+        if (dt >= 0) {
+            camera.Inputs(window, dt);
+
+            lightPos = glm::rotate(lightPos, glm::radians((float)(50.0f * dt)), glm::vec3(0.0f, 1.0f, 0.0f));
+            lightingShader.loadLightColorAndPos(lightColor, lightPos);
+            lightCubeModel = glm::mat4(1.0f);
+            lightCubeModel = glm::translate(lightCubeModel, lightPos);
+        }
+
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
-        camera.Inputs(window);
 
         testCube.Draw(lightingShader, camera, testCubeModel);
         lightCube.Draw(defaultShader, camera, lightCubeModel);
@@ -150,6 +163,10 @@ int main(int, char**){
         glfwSwapBuffers(window);
 
         glfwPollEvents();
+
+        end = glfwGetTime();
+        dt = end - begin;
+        begin = end;
     }
 
     testCube.Delete();

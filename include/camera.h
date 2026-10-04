@@ -26,14 +26,14 @@ class Camera {
 
         bool firstClick;
 
-        float speed = 0.05f;
+        float speed = 4.0f;
         float sensitivity = 200.0f;
 
         Camera(int width, int height, glm::vec3 position);
 
         void updateMatrix(float FOVdeg, float nearPlane, float farPlane);
         void Matrix(Shader& shader, const char* uniform);
-        void Inputs(GLFWwindow* window);
+        void Inputs(GLFWwindow* window, double dt);
 };
 
 #endif
