@@ -20,6 +20,7 @@ class Mesh {
         Mesh(std::vector <Vertex>& vertices, std::vector <GLuint>& indices);
 
         void Draw(Shader& shader, Camera& camera, glm::mat4 model);
+        void DrawWireframe(Shader& shader, Camera& camera, glm::mat4 model);
         void Delete();
 };
 

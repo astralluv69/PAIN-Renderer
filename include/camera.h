@@ -1,5 +1,5 @@
 #ifndef CAMERA_CLASS_H
-#define CAMER_CLASS_H
+#define CAMERA_CLASS_H
 
 #define GLM_ENABLE_EXPERIMENTAL
 

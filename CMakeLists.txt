@@ -18,16 +18,9 @@ add_executable(PAINRenderer
 
 add_custom_command(
     TARGET PAINRenderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            "${CMAKE_CURRENT_SOURCE_DIR}/shaders/test.vert"
-            "$<TARGET_FILE_DIR:PAINRenderer>/shaders/test.vert"   
-)
-
-add_custom_command(
-    TARGET PAINRenderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            "${CMAKE_CURRENT_SOURCE_DIR}/shaders/test.frag"
-            "$<TARGET_FILE_DIR:PAINRenderer>/shaders/test.frag"   
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
+            "$<TARGET_FILE_DIR:PAINRenderer>/shaders"   
 )
 
 target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
