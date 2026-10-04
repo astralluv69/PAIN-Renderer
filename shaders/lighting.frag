@@ -17,7 +17,7 @@ void main() {
     float b = 0.45f;
     float intensity = 1.0f / (a * dist * dist + b * dist * 1.0f);
 
-    float ambient = 0.15f;
+    float ambient = 0.1f;
 
     vec3 normal = normalize(fNormal);
     vec3 lightDirection = normalize(lightVec);

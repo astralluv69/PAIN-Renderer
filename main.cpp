@@ -135,7 +135,7 @@ int main(int, char**){
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
 
-    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+    Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
     
     double end;
     double begin = glfwGetTime();

@@ -4,6 +4,7 @@ Camera::Camera(int width, int height, glm::vec3 position) {
     Camera::width = width;
     Camera::height = height;
     Position = position;
+    Orientation = glm::normalize(glm::vec3(0.0f, 0.0f, 0.0f) - Position);
 }
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
