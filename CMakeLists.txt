@@ -14,6 +14,7 @@ add_executable(PAINRenderer
     vao.cpp
     camera.cpp
     mesh.cpp
+    text_element.cpp
 )
 
 add_custom_command(
@@ -21,6 +22,13 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
             "$<TARGET_FILE_DIR:PAINRenderer>/shaders"   
+)
+
+add_custom_command(
+    TARGET PAINRenderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/fonts"
+            "$<TARGET_FILE_DIR:PAINRenderer>/fonts"   
 )
 
 target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

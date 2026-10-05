@@ -11,11 +11,17 @@ struct Vertex {
     glm::vec3 normal;
 };
 
+struct TextVertex {
+    glm::vec2 position;
+    glm::vec2 texUV;
+};
+
 class VBO {
     public:
         GLuint ID;
         
         VBO(std::vector <Vertex>& vertices);
+        VBO(std::vector <TextVertex>& vertices);
 
         void Bind();
         void Unbind();

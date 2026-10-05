@@ -8,6 +8,7 @@
 #include <chrono>
 
 #include "mesh.h"
+#include "text_element.h"
 
 int width = 1280;
 int height = 720;
@@ -89,6 +90,8 @@ std::vector <Vertex> testLightVerts(testLightVertices, testLightVertices + sizeo
 std::vector <GLuint> testInd(testIndices, testIndices + sizeof(testIndices) / sizeof(GLuint));
 std::vector <GLuint> testLightInd(testLightIndices, testLightIndices + sizeof(testLightIndices) / sizeof(GLuint));
 
+glm::mat4 textProj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+
 int main(int, char**){
     glfwInit();
 
@@ -118,6 +121,8 @@ int main(int, char**){
 
     Mesh lightCube(testLightVerts, testLightInd);
 
+    Text testText("Hello World!", glm::vec2(400.0f, 0.0f), 10.0f);
+
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -131,6 +136,7 @@ int main(int, char**){
     Shader defaultShader("shaders/default.vert", "shaders/default.frag");
     Shader lightingShader("shaders/lighting.vert", "shaders/lighting.frag");
     lightingShader.loadLightColorAndPos(lightColor, lightPos);
+    Shader textShader("shaders/text.vert", "shaders/text.frag");
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
@@ -155,6 +161,8 @@ int main(int, char**){
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
+
+        testText.Draw(textShader, glm::vec3(1.0f, 1.0f, 1.0f), textProj);
 
         testCube.Draw(lightingShader, camera, testCubeModel);
         lightCube.Draw(defaultShader, camera, lightCubeModel);
