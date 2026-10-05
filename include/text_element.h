@@ -37,6 +37,8 @@ class Text {
 
     private: 
         void initText(const char* fontPath, GLuint fontSize);
+
+        GLuint VAO, VBO;
 };
 
 #endif
