@@ -9,7 +9,7 @@ out vec4 color;
 uniform vec4 lightColor;
 uniform vec3 lightPos;
 
-void main() {
+vec4 lighting() {
     vec3 lightVec = lightPos - fCurrentPos;
 
     float dist = length(lightVec);
@@ -23,5 +23,9 @@ void main() {
     vec3 lightDirection = normalize(lightVec);
     float diffuse = max(dot(normal, lightDirection), 0.0f);
 
-    color = (vec4(fColor, 1.0f) * (diffuse * intensity + ambient)) * lightColor;
+    return (vec4(fColor, 1.0f) * (diffuse * intensity + ambient)) * lightColor;
+}
+
+void main() {
+    color = lighting();
 }
