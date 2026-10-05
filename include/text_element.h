@@ -29,9 +29,9 @@ class Text {
 
         std::string text;
         glm::vec2 position;
-        float scale;
+        GLuint size;
 
-        Text(std::string text, glm::vec2 position, float scale);
+        Text(std::string text, glm::vec2 position, GLuint size);
 
         void Draw(Shader& shader, glm::vec3 color, glm::mat4 proj);
 

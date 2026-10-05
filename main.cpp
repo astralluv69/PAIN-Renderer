@@ -90,7 +90,7 @@ std::vector <Vertex> testLightVerts(testLightVertices, testLightVertices + sizeo
 std::vector <GLuint> testInd(testIndices, testIndices + sizeof(testIndices) / sizeof(GLuint));
 std::vector <GLuint> testLightInd(testLightIndices, testLightIndices + sizeof(testLightIndices) / sizeof(GLuint));
 
-glm::mat4 textProj = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f);
+glm::mat4 textProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
 int main(int, char**){
     glfwInit();
@@ -121,7 +121,7 @@ int main(int, char**){
 
     Mesh lightCube(testLightVerts, testLightInd);
 
-    Text testText("Hello World!", glm::vec2(400.0f, 0.0f), 10.0f);
+    Text testText("Hello World!", glm::vec2(400.0f, 15.0f), 32);
 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -162,10 +162,10 @@ int main(int, char**){
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
 
-        testText.Draw(textShader, glm::vec3(1.0f, 1.0f, 1.0f), textProj);
-
         testCube.Draw(lightingShader, camera, testCubeModel);
         lightCube.Draw(defaultShader, camera, lightCubeModel);
+
+        testText.Draw(textShader, glm::vec3(1.0f, 1.0f, 1.0f), textProj);
 
         glfwSwapBuffers(window);
 

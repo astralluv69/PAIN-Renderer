@@ -1,14 +1,12 @@
 #include "text_element.h"
 
-Text::Text(std::string text, glm::vec2 position, float scale) {
-    initText("fonts/default.ttf", 8);
+Text::Text(std::string text, glm::vec2 position, GLuint size) {
+    initText("fonts/default.ttf", size);
 
     Text::text = text;
     Text::position = position;
-    Text::scale = scale;
-}
+    Text::size = size;
 
-void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
@@ -18,7 +16,9 @@ void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
 
+void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
     float originalX = position.x;
 
     shader.Activate();
@@ -28,28 +28,27 @@ void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     for (std::string::const_iterator c = text.begin(); c != text.end(); c++) {
         Character character = characters[*c];
 
-        float xPos = position.x + character.offset.x * scale;
-        float yPos = position.y + character.offset.y * scale;
+        float xPos = position.x + character.offset.x;
+        float yPos = position.y - character.offset.y + size;
 
-        float w = character.size.x * scale;
-        float h = character.size.y * scale;
+        float w = character.size.x;
+        float h = character.size.y;
 
         float vertices[6][4] = {
-            { xPos,     yPos + h,   0.0f, 0.0f },
-            { xPos,     yPos,       0.0f, 1.0f },
-            { xPos + w, yPos,       1.0f, 1.0f },
+            { xPos,     yPos,       0.0f,  0.0f }, // Top-Left of upside-down quad
+            { xPos + w, yPos,       1.0f,  0.0f }, // Top-Right of upside-down quad
+            { xPos,     yPos + h,   0.0f,  1.0f }, // Bottom-Left of upside-down quad
 
-            { xPos,     yPos + h,   0.0f, 0.0f },
-            { xPos + w, yPos,       1.0f, 1.0f },
-            { xPos + w, yPos + h,   1.0f, 0.0f }
+            { xPos + w, yPos,       1.0f,  0.0f }, 
+            { xPos + w, yPos + h,   1.0f,  1.0f }, // Bottom-Right of upside-down quad
+            { xPos,     yPos + h,   0.0f,  1.0f }
         };
-
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glBindTexture(GL_TEXTURE_2D, character.texID);
 
@@ -59,10 +58,10 @@ void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        glDisable(GL_BLEND);
-
-        position.x += (character.advance >> 6) * scale;
+        position.x += (character.advance >> 6);
     }
+
+    glDisable(GL_BLEND);
 
     shader.Deactivate();
 
@@ -103,8 +102,8 @@ void Text::initText(const char* fontPath, GLuint fontSize) {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         Character character = {
             texture,
@@ -115,4 +114,6 @@ void Text::initText(const char* fontPath, GLuint fontSize) {
 
         characters.insert(std::pair<char, Character>(c, character));
     }
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
