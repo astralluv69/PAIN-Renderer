@@ -3,7 +3,7 @@
     "configurePresets": [
         {
             "name": "Vulcan Preset",
-            "displayName": "GCC 13.3.0 x86_64-linux-gnu",
+            "displayName": "Linux Preset for Vulcan",
             "description": "Using compilers: C = /usr/bin/gcc, CXX = /usr/bin/g++",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
@@ -15,7 +15,7 @@
         },
         {
             "name": "Haephestus Preset",
-            "displayName": "Visual Studio Community 2026 Release - amd64",
+            "displayName": "Windows Preset for Haephestus",
             "description": "Using compilers for Visual Studio 18 2026 (x64 architecture)",
             "generator": "Visual Studio 18 2026",
             "toolset": "host=x64",
