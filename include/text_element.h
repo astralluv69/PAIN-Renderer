@@ -34,6 +34,7 @@ class Text {
         Text(std::string text, glm::vec2 position, GLuint size);
 
         void Draw(Shader& shader, glm::vec3 color, glm::mat4 proj);
+        void Delete();
 
     private: 
         void initText(const char* fontPath, GLuint fontSize);

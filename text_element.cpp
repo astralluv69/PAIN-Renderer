@@ -117,3 +117,8 @@ void Text::initText(const char* fontPath, GLuint fontSize) {
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
+
+void Text::Delete() {
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+}

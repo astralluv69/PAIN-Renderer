@@ -121,7 +121,7 @@ int main(int, char**){
 
     Mesh lightCube(testLightVerts, testLightInd);
 
-    Text testText("Hello World!", glm::vec2(400.0f, 15.0f), 32);
+    Text testText("Hello World!", glm::vec2(400.0f, 0.0f), 32);
 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -176,8 +176,12 @@ int main(int, char**){
         begin = end;
     }
 
+    testText.Delete();
+    lightCube.Delete();
     testCube.Delete();
     defaultShader.Delete();
+    lightingShader.Delete();
+    textShader.Delete();
 
     glfwTerminate();
 
