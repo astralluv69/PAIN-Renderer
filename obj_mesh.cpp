@@ -1,7 +1,15 @@
 #include "obj_mesh.h"
 
-ObjMesh::ObjMesh(std::vector <ObjVertex>& vertices, std::vector <GLuint>& indices)
-    : meshVertices(vertices), meshIndices(indices), meshVBO(vertices), meshEBO(indices) {
+ObjMesh::ObjMesh(const char* filepath) {
+    OBJ_Load objFile(filepath);
+
+    objFile.loadObj(meshVertices, meshIndices);
+
+    meshVBO.Delete();
+    meshEBO.Delete();
+
+    VBO meshVBO(meshVertices);
+    EBO meshEBO(meshIndices);
 
     meshVAO.Bind();
 
@@ -10,7 +18,6 @@ ObjMesh::ObjMesh(std::vector <ObjVertex>& vertices, std::vector <GLuint>& indice
 
     meshVAO.LinkAttrib(meshVBO, 0, 3, GL_FLOAT, sizeof(ObjVertex), 0);
     meshVAO.LinkAttrib(meshVBO, 1, 3, GL_FLOAT, sizeof(ObjVertex), (void*)(3 * sizeof(float)));
-    meshVAO.LinkAttrib(meshVBO, 2, 3, GL_FLOAT, sizeof(ObjVertex), (void*)(6 * sizeof(float)));
 
     meshVAO.Unbind();
     meshVBO.Unbind();

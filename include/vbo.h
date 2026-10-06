@@ -18,8 +18,7 @@ struct TextVertex {
 
 struct ObjVertex {
     glm::vec3 position;
-    glm::vec2 texCoords;
-    glm::vec3 normals;
+    glm::vec3 normal;
 };
 
 class VBO {

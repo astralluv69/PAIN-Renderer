@@ -8,6 +8,7 @@
 #include <chrono>
 
 #include "mesh.h"
+#include "obj_mesh.h"
 #include "ui_element.h"
 
 int width = 1280;
@@ -116,6 +117,7 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
+    ObjMesh testObj("models/stanford-bunny.obj");
 
     Mesh testCube(testVerts, testInd);
 
@@ -139,6 +141,8 @@ int main(int, char**){
     Shader defaultShader("shaders/default.vert", "shaders/default.frag");
     Shader lightingShader("shaders/lighting.vert", "shaders/lighting.frag");
     lightingShader.loadLightColorAndPos(lightColor, lightPos);
+    Shader objModelShader("shaders/objModel.vert", "shaders/objModel.frag");
+    objModelShader.loadLightColorAndPos(lightColor, lightPos);
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
@@ -156,24 +160,26 @@ int main(int, char**){
 
         if (dt >= 0) {
             camera.Inputs(window, dt);
-
-            lightPos = glm::rotate(lightPos, glm::radians((float)(50.0f * dt)), glm::vec3(0.0f, 1.0f, 0.0f));
-            lightingShader.loadLightColorAndPos(lightColor, lightPos);
-            lightCubeModel = glm::translate(glm::mat4(1.0f), lightPos);
             
             //glfwSetWindowTitle(window, ("PAIN Renderer - FPS " + std::to_string(1.0f / dt)).c_str());
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
 
-        testCube.Draw(lightingShader, camera, testCubeModel);
-        lightCube.Draw(defaultShader, camera, lightCubeModel);
+        //testCube.Draw(lightingShader, camera, testCubeModel);
+        testObj.Draw(objModelShader, camera, testCubeModel);
+        //lightCube.Draw(defaultShader, camera, lightCubeModel);
 
         testUI.Draw(uiProj);
 
         glfwSwapBuffers(window);
 
         glfwPollEvents();
+
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            std::cout << "OpenGL Error: 0x" << std::hex << err << std::endl;
+        }
 
         end = glfwGetTime();
         dt = end - begin;

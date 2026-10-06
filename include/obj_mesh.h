@@ -7,6 +7,7 @@
 #include "vbo.h"
 #include "ebo.h"
 #include "camera.h"
+#include "obj_loader.h"
 
 class ObjMesh {
     public:
@@ -14,10 +15,10 @@ class ObjMesh {
         std::vector <GLuint> meshIndices;
         
         VAO meshVAO;
-        VBO meshVBO;
-        EBO meshEBO;
+        VBO meshVBO = VBO(meshVertices);
+        EBO meshEBO = EBO(meshIndices);
 
-        ObjMesh(std::vector <ObjVertex>& vertices, std::vector <GLuint>& indices);
+        ObjMesh(const char* filepath);
 
         void Draw(Shader& shader, Camera& camera, glm::mat4 model);
         void DrawWireframe(Shader& shader, Camera& camera, glm::mat4 model);
