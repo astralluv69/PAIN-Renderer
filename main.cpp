@@ -160,6 +160,8 @@ int main(int, char**){
             lightPos = glm::rotate(lightPos, glm::radians((float)(50.0f * dt)), glm::vec3(0.0f, 1.0f, 0.0f));
             lightingShader.loadLightColorAndPos(lightColor, lightPos);
             lightCubeModel = glm::translate(glm::mat4(1.0f), lightPos);
+            
+            //std::cout << 1.0f / dt << std::endl;
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
