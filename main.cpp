@@ -161,7 +161,7 @@ int main(int, char**){
             lightingShader.loadLightColorAndPos(lightColor, lightPos);
             lightCubeModel = glm::translate(glm::mat4(1.0f), lightPos);
             
-            //std::cout << 1.0f / dt << std::endl;
+            //glfwSetWindowTitle(window, ("PAIN Renderer - FPS " + std::to_string(1.0f / dt)).c_str());
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);

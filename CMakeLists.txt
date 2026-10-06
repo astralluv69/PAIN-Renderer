@@ -17,6 +17,7 @@ add_executable(PAINRenderer
     text_element.cpp
     ui_element.cpp
     element.cpp
+    obj_mesh.cpp
 )
 
 add_custom_command(
@@ -31,6 +32,13 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/fonts"
             "$<TARGET_FILE_DIR:PAINRenderer>/fonts"   
+)
+
+add_custom_command(
+    TARGET PAINRenderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/models"
+            "$<TARGET_FILE_DIR:PAINRenderer>/models"   
 )
 
 target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

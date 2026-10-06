@@ -12,6 +12,12 @@ VBO::VBO(std::vector <TextVertex>& vertices) {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(TextVertex), vertices.data(), GL_STATIC_DRAW);
 }
 
+VBO::VBO(std::vector <ObjVertex>& vertices) {
+    glGenBuffers(1, &ID);
+    glBindBuffer(GL_ARRAY_BUFFER, ID);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(ObjVertex), vertices.data(), GL_STATIC_DRAW);
+}
+
 void VBO::Bind() {
     glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
