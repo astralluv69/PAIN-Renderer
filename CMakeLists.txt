@@ -15,6 +15,8 @@ add_executable(PAINRenderer
     camera.cpp
     mesh.cpp
     text_element.cpp
+    ui_element.cpp
+    element.cpp
 )
 
 add_custom_command(

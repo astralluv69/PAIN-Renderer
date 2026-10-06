@@ -30,10 +30,12 @@ class Text {
         std::string text;
         glm::vec2 position;
         GLuint size;
+        glm::vec3 color;
+        Shader textShader = Shader("shaders/text.vert", "shaders/text.frag");
 
-        Text(std::string text, glm::vec2 position, GLuint size);
+        Text(std::string text, glm::vec2 position, glm::vec3 color, GLuint size);
 
-        void Draw(Shader& shader, glm::vec3 color, glm::mat4 proj);
+        void Draw(glm::mat4 proj);
         void Delete();
 
     private: 

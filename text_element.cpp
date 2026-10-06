@@ -1,11 +1,12 @@
 #include "text_element.h"
 
-Text::Text(std::string text, glm::vec2 position, GLuint size) {
+Text::Text(std::string text, glm::vec2 position, glm::vec3 color, GLuint size) {
     initText("fonts/default.ttf", size);
 
     Text::text = text;
     Text::position = position;
     Text::size = size;
+    Text::color = color;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -18,13 +19,13 @@ Text::Text(std::string text, glm::vec2 position, GLuint size) {
     glBindVertexArray(0);
 }
 
-void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
+void Text::Draw(glm::mat4 proj) {
     float originalX = position.x;
 
-    shader.Activate();
-    glUniform3f(glGetUniformLocation(shader.ID, "textColor"), color.x, color.y, color.z);
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
-    glUniform1i(glGetUniformLocation(shader.ID, "text"), 0);
+    textShader.Activate();
+    glUniform3f(glGetUniformLocation(textShader.ID, "textColor"), color.x, color.y, color.z);
+    glUniformMatrix4fv(glGetUniformLocation(textShader.ID, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
+    glUniform1i(glGetUniformLocation(textShader.ID, "text"), 0);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
@@ -63,7 +64,7 @@ void Text::Draw(Shader& shader, glm::vec3 color, glm::mat4 proj) {
 
     glDisable(GL_BLEND);
 
-    shader.Deactivate();
+    textShader.Deactivate();
 
     position.x = originalX;
 }
@@ -121,4 +122,5 @@ void Text::initText(const char* fontPath, GLuint fontSize) {
 void Text::Delete() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    textShader.Delete();
 }
