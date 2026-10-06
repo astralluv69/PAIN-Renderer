@@ -20,7 +20,7 @@ class VBO {
     public:
         GLuint ID;
         
-        VBO(std::vector <Vertex>& vertices);
+        VBO(const std::vector <Vertex>& vertices);
         VBO(std::vector <TextVertex>& vertices);
 
         void Bind();
