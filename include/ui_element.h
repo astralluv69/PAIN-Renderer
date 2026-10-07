@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "element.h"
+#include "button_element.h"
 
 class UiElement {
     public:

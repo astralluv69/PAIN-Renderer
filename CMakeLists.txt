@@ -19,6 +19,7 @@ add_executable(PAINRenderer
     element.cpp
     obj_mesh.cpp
     obj_loader.cpp
+    button_element.cpp
 )
 
 add_custom_command(

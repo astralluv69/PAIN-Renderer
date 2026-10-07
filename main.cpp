@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <chrono>
 
+#include "util.h"
 #include "mesh.h"
 #include "obj_mesh.h"
 #include "ui_element.h"
@@ -91,6 +92,8 @@ std::vector <Vertex> testLightVerts(testLightVertices, testLightVertices + sizeo
 std::vector <GLuint> testInd(testIndices, testIndices + sizeof(testIndices) / sizeof(GLuint));
 std::vector <GLuint> testLightInd(testLightIndices, testLightIndices + sizeof(testLightIndices) / sizeof(GLuint));
 
+std::vector <ButtonElement> buttons;
+
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
 int main(int, char**){
@@ -161,13 +164,17 @@ int main(int, char**){
         if (dt >= 0) {
             camera.Inputs(window, dt);
             
+            for (ButtonElement button : buttons) {
+                button.update(window, dt);
+            }
+
             //glfwSetWindowTitle(window, ("PAIN Renderer - FPS " + std::to_string(1.0f / dt)).c_str());
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
 
         //testCube.Draw(lightingShader, camera, testCubeModel);
-        testObj.Draw(objModelShader, camera, testCubeModel);
+        testObj.DrawWireframe(objModelShader, camera, testCubeModel);
         //lightCube.Draw(defaultShader, camera, lightCubeModel);
 
         testUI.Draw(uiProj);

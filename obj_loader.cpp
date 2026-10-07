@@ -119,11 +119,4 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
             vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
         }
     }
-
-    /*
-    for (ObjVertex vertex : vertices) {
-        std::cout << "Vertex Pos: (" << vertex.position.x << ", " << vertex.position.y << ", " << vertex.position.z
-                      << ") | Normal: " << vertex.normal.x << ", " << vertex.normal.y << ", " << vertex.normal.z << std::endl;
-    }
-    */
 }

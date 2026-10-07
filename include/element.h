@@ -3,15 +3,8 @@
 
 #include <vector>
 #include <string>
-#include <glm/glm.hpp>
-#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "text_element.h"
-#include "shader.h"
-#include "vao.h"
-#include "vbo.h"
-#include "ebo.h"
 
 class Element {
     public:
@@ -24,6 +17,10 @@ class Element {
 
         std::string name;
         Text textElement = Text("", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0);
+        glm::vec2 startPos;
+        glm::vec2 endPos;
+
+        Element();
 
         Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, std::string text = "", GLuint textSize = 0, 
             glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f));

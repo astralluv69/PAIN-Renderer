@@ -1,8 +1,14 @@
 #include "element.h"
 
+Element::Element() {
+    name = "";
+}
+
 Element::Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, std::string text, GLuint textSize, glm::vec3 textColor) {
     Element::name = name;
     textElement = Text(text, glm::vec2(startPos.x + 5.0f, startPos.y), textColor, textSize);
+    Element::startPos = startPos;
+    Element::endPos = endPos;
 
     Vertex vertices[] = {
         Vertex{glm::vec3(startPos.x, startPos.y, 0.1f), bgColor},
