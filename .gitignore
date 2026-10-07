@@ -28,7 +28,6 @@ CMakeUserPresets.json
 # C++ Compiler & Intellisense Artifacts
 # ==========================================
 *.o
-*.obj
 *.exe
 *.a
 *.lib
