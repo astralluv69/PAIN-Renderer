@@ -96,6 +96,8 @@ std::vector <ButtonElement> buttons;
 
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
+bool wireframeToggle = true;
+
 int main(int, char**){
     glfwInit();
 
@@ -126,11 +128,6 @@ int main(int, char**){
 
     Mesh lightCube(testLightVerts, testLightInd);
 
-    Element testElement("testElement", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), glm::vec3(0.5f, 0.5f, 0.5f), "Hello World", 16);
-
-    UiElement testUI("testUI");
-    testUI.AddElement(testElement);
-
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -151,6 +148,26 @@ int main(int, char**){
     glfwSwapInterval(1);
 
     Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
+
+    Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+
+    ButtonElement testButton(
+        "testButton", 
+        glm::vec2(0.0f, 0.0f), 
+        glm::vec2(60.0f, 20.0f), 
+        glm::vec3(1.0f, 1.0f, 1.0f), 
+        glm::vec3(0.35f, 0.0f, 0.73f), 
+        buttons, 
+        [](){wireframeToggle = !wireframeToggle;}, 
+        [](){},
+        "Toggle Wire", 
+        16,
+        glm::vec3(0.0f, 0.0f, 0.0f)
+    );
+
+    UiElement ribbon("testUI");
+    ribbon.AddElement(ribbonBg);
+    ribbon.AddElement(testButton);
     
     double end;
     double begin = glfwGetTime();
@@ -174,10 +191,14 @@ int main(int, char**){
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
 
         //testCube.Draw(lightingShader, camera, testCubeModel);
-        testObj.DrawWireframe(objModelShader, camera, testCubeModel);
+        if(wireframeToggle) {
+            testObj.DrawWireframe(objModelShader, camera, testCubeModel);
+        } else {
+            testObj.Draw(objModelShader, camera, testCubeModel);
+        }
         //lightCube.Draw(defaultShader, camera, lightCubeModel);
 
-        testUI.Draw(uiProj);
+        ribbon.Draw(uiProj);
 
         glfwSwapBuffers(window);
 
@@ -193,7 +214,7 @@ int main(int, char**){
         begin = end;
     }
 
-    testUI.Delete();
+    ribbon.Delete();
     lightCube.Delete();
     testCube.Delete();
     defaultShader.Delete();

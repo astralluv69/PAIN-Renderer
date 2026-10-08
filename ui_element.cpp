@@ -2,6 +2,7 @@
 
 UiElement::UiElement(std::string name) {
     UiElement::name = name;
+    elementDepth = 0.1f;
 }
 
 void UiElement::AddElement(Element elementToAdd) {
@@ -15,7 +16,7 @@ void UiElement::Delete() {
 }
 
 void UiElement::Draw(glm::mat4 proj) {
-    for (Element element : elements) {
-        element.Draw(proj);
+    for (size_t i = elements.size(); i-- > 0;) {
+        elements[i].Draw(proj);
     }
 }

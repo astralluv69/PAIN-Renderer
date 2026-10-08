@@ -1,22 +1,20 @@
 #include "button_element.h"
 
-ButtonElement::ButtonElement(Element element, std::vector<ButtonElement>& buttons, std::function<void()> onPress) {
+ButtonElement::ButtonElement(Element element, std::vector<ButtonElement>& buttons, std::function<void()> onPress, std::function<void()> onHover) {
     parentElement = element;
     buttons.push_back(*this);
     ButtonElement::onPress = onPress;
+    ButtonElement::onHover = onHover;
 }
 
-ButtonElement::ButtonElement(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, std::vector<ButtonElement>& buttons, 
-        std::function<void()> onPress, std::string text, GLuint textSize, glm::vec3 textColor) {
-    glm::vec3 hoverColor = glm::vec3(
-
-    );
-    
+ButtonElement::ButtonElement(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, glm::vec3 hoverColor, std::vector<ButtonElement>& buttons, 
+        std::function<void()> onPress, std::function<void()> onHover, std::string text, GLuint textSize, glm::vec3 textColor) {
     parentElement = Element(name, startPos, endPos, bgColor, text, textSize, textColor);
     hoverElement = Element(name, startPos, endPos, hoverColor, text, textSize, textColor);
     activeElement = parentElement;
     buttons.push_back(*this);
     ButtonElement::onPress = onPress;
+    ButtonElement::onHover = onHover;
     ButtonElement::startPos = startPos;
     ButtonElement::endPos = endPos;
 }
@@ -27,6 +25,7 @@ void ButtonElement::update(GLFWwindow* window, double dt) {
 
     if((cursorPosX >= startPos.x && cursorPosX <= endPos.x) && (cursorPosY >= startPos.y && cursorPosY <= endPos.y)) {
         activeElement = hoverElement;
+        onHover();
     } else {
         activeElement = parentElement;
     }

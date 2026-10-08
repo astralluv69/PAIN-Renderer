@@ -12,6 +12,7 @@ class UiElement {
     public:
         std::string name;
         std::vector <Element> elements;
+        float elementDepth;
 
         UiElement(std::string name);
 
