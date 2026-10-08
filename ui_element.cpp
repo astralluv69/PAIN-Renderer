@@ -16,7 +16,7 @@ void UiElement::Delete() {
 }
 
 void UiElement::Draw(glm::mat4 proj) {
-    for (size_t i = elements.size(); i-- > 0;) {
-        elements[i].Draw(proj);
+    for (Element element : elements) {
+        element.Draw(proj);
     }
 }

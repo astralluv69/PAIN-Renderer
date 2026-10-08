@@ -22,6 +22,9 @@ void Camera::Matrix(Shader& shader, const char* uniform) {
 }
 
 void Camera::Inputs(GLFWwindow* window, double dt) {
+    double mouseX, mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         Position += (float)(speed * dt) * Orientation;
     }
@@ -41,16 +44,13 @@ void Camera::Inputs(GLFWwindow* window, double dt) {
         Position += (float)(speed * dt) * -Up;
     }
 
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+    if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) && (mouseY > 20)) {
         if (firstClick) {
             glfwSetCursorPos(window, (width / 2), (height / 2));
             firstClick = false;
         }
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-        double mouseX, mouseY;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
 
         float rotX = sensitivity * (float) (mouseY - (height / 2)) / height;
         float rotY = sensitivity * (float) (mouseX - (width / 2)) / width;

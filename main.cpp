@@ -96,9 +96,9 @@ std::vector <ButtonElement> buttons;
 
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
-bool wireframeToggle = true;
-
 int main(int, char**){
+    bool wireframeToggle = true;
+
     glfwInit();
 
     std::cout << "Hello from GLFW Version " << glfwGetVersionString() << std::endl;
@@ -154,18 +154,24 @@ int main(int, char**){
     ButtonElement testButton(
         "testButton", 
         glm::vec2(0.0f, 0.0f), 
-        glm::vec2(60.0f, 20.0f), 
+        glm::vec2(80.0f, 20.0f), 
         glm::vec3(1.0f, 1.0f, 1.0f), 
         glm::vec3(0.35f, 0.0f, 0.73f), 
         buttons, 
-        [](){wireframeToggle = !wireframeToggle;}, 
-        [](){},
+        [&wireframeToggle](){
+            static double timer = glfwGetTime();
+            if (glfwGetTime() - timer > 0.5) {
+                wireframeToggle = !wireframeToggle;
+                timer = glfwGetTime();
+            }
+        }, 
+        [](){std::cout << "running hover func" << std::endl;},
         "Toggle Wire", 
-        16,
+        12,
         glm::vec3(0.0f, 0.0f, 0.0f)
     );
 
-    UiElement ribbon("testUI");
+    UiElement ribbon("ribbon");
     ribbon.AddElement(ribbonBg);
     ribbon.AddElement(testButton);
     
@@ -179,11 +185,11 @@ int main(int, char**){
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
         if (dt >= 0) {
-            camera.Inputs(window, dt);
-            
             for (ButtonElement button : buttons) {
                 button.update(window, dt);
             }
+
+            camera.Inputs(window, dt);
 
             //glfwSetWindowTitle(window, ("PAIN Renderer - FPS " + std::to_string(1.0f / dt)).c_str());
         }
