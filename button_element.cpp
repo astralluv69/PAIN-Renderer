@@ -23,6 +23,8 @@ void ButtonElement::update(GLFWwindow* window, double dt) {
     double cursorPosX, cursorPosY;
     glfwGetCursorPos(window, &cursorPosX, &cursorPosY);
 
+    static bool isHovering = false;
+
     if((cursorPosX >= startPos.x && cursorPosX <= endPos.x) && (cursorPosY >= startPos.y && cursorPosY <= endPos.y)) {
         activeElement = hoverElement;
         if(!isHovering) {
@@ -30,10 +32,12 @@ void ButtonElement::update(GLFWwindow* window, double dt) {
             std::cout << "Attempting to run hover func" << std::endl;
             onHover();
         }
-    } else if(((cursorPosX < startPos.x && cursorPosX > endPos.x) && (cursorPosY < startPos.y && cursorPosY > endPos.y)) && isHovering) {
-        std::cout << "resetting hover var" << std::endl;
-        activeElement = parentElement;
-        isHovering = false;
+    } else {
+        if(isHovering) {
+            std::cout << "resetting hover var" << std::endl;
+            activeElement = parentElement;
+            isHovering = false;
+        }
     }
 
     if((cursorPosX >= startPos.x && cursorPosX <= endPos.x) && (cursorPosY >= startPos.y && cursorPosY <= endPos.y)) {
@@ -48,8 +52,4 @@ void ButtonElement::update(GLFWwindow* window, double dt) {
             firstClick = true;
         }
     }
-}
-
-void ButtonElement::Draw(glm::mat4 proj) {
-    activeElement.Draw(proj);
 }

@@ -1,6 +1,6 @@
-1. Fix button updating to only run once per hover
-2. Build out UI structure
+Fix the button not drawing a different color when hovered
+Build out UI structure
     -File Importing
     -File Exporting
-3. Add importer for .stl files
-4. Add importer for .3mf files
+Add importer for .stl files
+Add importer for .3mf files

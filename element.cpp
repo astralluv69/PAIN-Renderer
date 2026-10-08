@@ -1,8 +1,6 @@
 #include "element.h"
 
-Element::Element() {
-    name = "";
-}
+Element::Element(): Element("", glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f)) {}
 
 Element::Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, std::string text, GLuint textSize, glm::vec3 textColor) {
     Element::name = name;
@@ -26,9 +24,11 @@ Element::Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::ve
 
     Element::inds = std::vector<GLuint>(indices, indices + sizeof(indices) / sizeof(GLuint));
 
+    elementVAO.Delete();
     elementVBO.Delete();
     elementEBO.Delete();
 
+    VAO elementVAO;
     VBO elementVBO(verts);
     EBO elementEBO(inds);
 
