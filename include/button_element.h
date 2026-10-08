@@ -2,6 +2,7 @@
 #define BUTTON_ELEMENT_CLASS_H
 
 #include <functional>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "element.h"

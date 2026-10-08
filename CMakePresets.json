@@ -36,6 +36,12 @@
             "displayName": "Visual Studio Community 2026 Release - amd64 - Debug",
             "configurePreset": "Haephestus Preset",
             "configuration": "Debug"
+        },
+        {
+            "name": "Haephestus Preset-release",
+            "displayName": "Visual Studio Community 2026 Release - amd64 - Release",
+            "configurePreset": "Haephestus Preset",
+            "configuration": "Release"
         }
     ]
 }
