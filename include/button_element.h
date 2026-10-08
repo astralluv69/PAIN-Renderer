@@ -23,6 +23,7 @@ class ButtonElement: public Element {
         void update(GLFWwindow* window, double dt);
         void Draw(glm::mat4 proj) override {
             activeElement.Draw(proj);
+            std::cout << "drawing from child" << std::endl;
         };
 };
 

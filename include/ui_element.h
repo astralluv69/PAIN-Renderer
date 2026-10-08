@@ -11,12 +11,14 @@
 class UiElement {
     public:
         std::string name;
-        std::vector <Element> elements;
+        std::vector<Element> baseElements;
+        std::vector<ButtonElement> buttons;
         float elementDepth;
 
         UiElement(std::string name);
 
         void AddElement(Element elementToAdd);
+        void AddElement(ButtonElement elementToAdd);
         void Draw(glm::mat4 proj);
         void Delete();
 };

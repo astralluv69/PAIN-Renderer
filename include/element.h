@@ -20,11 +20,14 @@ class Element {
         Text textElement = Text("", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 0);
         glm::vec2 startPos;
         glm::vec2 endPos;
+        glm::vec3 color;
 
         Element();
 
         Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, std::string text = "", GLuint textSize = 0, 
             glm::vec3 textColor = glm::vec3(1.0f, 1.0f, 1.0f));
+
+        virtual ~Element() = default;
 
         virtual void Draw(glm::mat4 proj);
         void Delete();

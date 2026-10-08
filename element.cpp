@@ -7,6 +7,7 @@ Element::Element(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::ve
     textElement = Text(text, glm::vec2(startPos.x + 5.0f, startPos.y), textColor, textSize);
     Element::startPos = startPos;
     Element::endPos = endPos;
+    color = bgColor;
 
     Vertex vertices[] = {
         Vertex{glm::vec3(startPos.x, startPos.y, 0.1f), bgColor},
@@ -68,4 +69,6 @@ void Element::Draw(glm::mat4 proj) {
     textElement.Draw(proj);
 
     glEnable(GL_DEPTH_TEST);
+
+    std::cout << "drawing from parent " << name << std::endl;
 }

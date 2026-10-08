@@ -11,8 +11,8 @@ ButtonElement::ButtonElement(Element element, std::vector<ButtonElement>& button
 ButtonElement::ButtonElement(std::string name, glm::vec2 startPos, glm::vec2 endPos, glm::vec3 bgColor, glm::vec3 hoverColor, std::vector<ButtonElement>& buttons, 
         std::function<void()> onPress, std::function<void()> onHover, std::string text, GLuint textSize, glm::vec3 textColor): 
             Element(name, startPos, endPos, bgColor, text, textSize, textColor), onHover(std::move(onHover)), onPress(std::move(onPress)) {
-    parentElement = Element(name, startPos, endPos, bgColor, text, textSize, textColor);
-    hoverElement = Element(name, startPos, endPos, hoverColor, text, textSize, textColor);
+    parentElement = Element("parentElement", startPos, endPos, bgColor, text, textSize, textColor);
+    hoverElement = Element("hoverElement", startPos, endPos, hoverColor, text, textSize, textColor);
     activeElement = parentElement;
     buttons.push_back(*this);
     ButtonElement::startPos = startPos;
@@ -26,15 +26,13 @@ void ButtonElement::update(GLFWwindow* window, double dt) {
     static bool isHovering = false;
 
     if((cursorPosX >= startPos.x && cursorPosX <= endPos.x) && (cursorPosY >= startPos.y && cursorPosY <= endPos.y)) {
-        activeElement = hoverElement;
         if(!isHovering) {
             isHovering = true;
-            std::cout << "Attempting to run hover func" << std::endl;
             onHover();
         }
+        activeElement = hoverElement;
     } else {
         if(isHovering) {
-            std::cout << "resetting hover var" << std::endl;
             activeElement = parentElement;
             isHovering = false;
         }

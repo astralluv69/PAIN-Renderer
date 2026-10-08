@@ -80,7 +80,7 @@ int main(int, char**){
                 timer = glfwGetTime();
             }
         }, 
-        [](){std::cout << "running hover func" << std::endl;},
+        [](){},
         "Toggle Wire", 
         12,
         glm::vec3(0.0f, 0.0f, 0.0f)
