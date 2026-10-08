@@ -1,4 +1,4 @@
-1. fix button updating and ammend commit
+1. Fix button updating to only run once per update
 2. Build out UI structure
     -File Importing
     -File Exporting
