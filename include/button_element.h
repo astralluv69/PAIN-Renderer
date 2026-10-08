@@ -22,7 +22,7 @@ class ButtonElement: public Element {
         ButtonElement(Element element, std::vector<ButtonElement>& buttons, std::function<void()> onPress, std::function<void()> onHover);
 
         void update(GLFWwindow* window, double dt);
-        void Draw(glm::mat4 proj);
+        void Draw(glm::mat4 proj) override;
 };
 
 #endif

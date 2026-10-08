@@ -1,4 +1,4 @@
-1. Fix button updating to only run once per update
+1. Fix button updating to only run once per hover
 2. Build out UI structure
     -File Importing
     -File Exporting

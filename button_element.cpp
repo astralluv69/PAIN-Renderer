@@ -1,6 +1,7 @@
 #include "button_element.h"
 
-ButtonElement::ButtonElement(Element element, std::vector<ButtonElement>& buttons, std::function<void()> onPress, std::function<void()> onHover) {
+ButtonElement::ButtonElement(Element element, std::vector<ButtonElement>& buttons, std::function<void()> onPress, std::function<void()> onHover):
+    Element(element) {
     parentElement = element;
     buttons.push_back(*this);
     ButtonElement::onPress = onPress;
