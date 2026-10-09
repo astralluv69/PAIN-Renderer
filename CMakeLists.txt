@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(PAINRenderer VERSION 0.1.0 LANGUAGES C CXX)
 
-find_package(glfw3 CONFIG REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(Freetype REQUIRED)
-
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -48,4 +44,29 @@ add_custom_command(
 
 target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(GLFW_DIR "${CMAKE_SOURCE_DIR}/lib/glfw")
+
+    add_library(glfw_windows STATIC IMPORTED GLOBAL)
+
+    set_target_properties(glfw_windows PROPERTIES
+        IMPORTED_LOCATION "${GLFW_DIR}/lib-mingw-w64/libglfw3.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${GLFW_DIR}/include"    
+    )
+
+    set(FREETYPE_DIR "${CMAKE_SOURCE_DIR}/lib/freetype")
+
+    add_library(freetype_windows STATIC IMPORTED GLOBAL)
+
+    set_target_properties(freetype_windows PROPERTIES
+        IMPORTED_LOCATION "${FREETYPE_DIR}/lib/libfreetype.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${FREETYPE_DIR}/include/freetype2"    
+    )
+
+    target_link_libraries(PAINRenderer PRIVATE glfw_windows freetype_windows opengl32 gdi32)
+else()
+    find_package(glfw3 CONFIG REQUIRED)
+    find_package(Freetype REQUIRED)
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype)
+endif()
