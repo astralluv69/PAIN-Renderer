@@ -69,6 +69,4 @@ void Element::Draw(glm::mat4 proj) {
     textElement.Draw(proj);
 
     glEnable(GL_DEPTH_TEST);
-
-    std::cout << "drawing from parent " << name << std::endl;
 }
