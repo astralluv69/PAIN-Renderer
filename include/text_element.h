@@ -4,7 +4,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <ft2build.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -14,7 +13,10 @@
 #include "ebo.h"
 #include "shader.h"
 
-#include FT_FREETYPE_H
+extern "C" {
+    #include <ft2build.h>
+    #include FT_FREETYPE_H
+}
 
 struct Character {
     GLuint texID;
