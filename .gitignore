@@ -27,11 +27,6 @@ CMakeUserPresets.json
 # C++ Compiler & Intellisense Artifacts
 # ==========================================
 *.o
-*.exe
-*.a
-*.lib
-*.so
-*.dll
 *.dylib
 *.pdb
 *.suo
