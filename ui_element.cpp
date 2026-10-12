@@ -13,6 +13,12 @@ void UiElement::AddElement(ButtonElement elementToAdd) {
     buttons.push_back(elementToAdd);
 }
 
+void UiElement::Update(GLFWwindow* window, double dt) {
+    for (ButtonElement& button : buttons) {
+        button.update(window, dt);
+    }
+}
+
 void UiElement::Delete() {
     for (Element element : baseElements) {
         element.Delete();

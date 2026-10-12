@@ -17,8 +17,6 @@ int height = 720;
 const char* title = "PAIN Renderer";
 GLFWwindow* window;
 
-std::vector<ButtonElement> buttons;
-
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
 int main(int, char**){
@@ -72,7 +70,6 @@ int main(int, char**){
         glm::vec2(80.0f, 20.0f), 
         glm::vec3(1.0f, 1.0f, 1.0f), 
         glm::vec3(0.35f, 0.0f, 0.73f), 
-        buttons, 
         [&wireframeToggle](){
             static double timer = glfwGetTime();
             if (glfwGetTime() - timer > 0.5) {
@@ -100,9 +97,7 @@ int main(int, char**){
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 
         if (dt >= 0) {
-            for (ButtonElement button : buttons) {
-                button.update(window, dt);
-            }
+            ribbon.Update(window, dt);
 
             camera.Inputs(window, dt);
 

@@ -19,6 +19,7 @@ class UiElement {
 
         void AddElement(Element elementToAdd);
         void AddElement(ButtonElement elementToAdd);
+        void Update(GLFWwindow* window, double dt);
         void Draw(glm::mat4 proj);
         void Delete();
 };
