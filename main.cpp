@@ -51,7 +51,7 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
-    ObjMesh testObj("models/standford-bunny.obj");
+    ObjMesh testObj("models/stanford-bunny.obj");
     std::optional<ObjMesh> objFileObj = std::nullopt;
 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
