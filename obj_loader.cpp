@@ -4,7 +4,7 @@ OBJ_Load::OBJ_Load(const char* filepath) {
     OBJ_Load::filepath = filepath;
 }
 
-void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& indices) {
+void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& indices) {\
     vertices.clear();
     indices.clear();
 
@@ -35,23 +35,35 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
             ss >> tex.x >> tex.y;
             temp_texCoords.push_back(tex);
         } else if (prefix == "f") {
-            for (int i = 0; i < 3; i++) {
-                std::string vertexStr;
-                ss >> vertexStr;
+            std::string vertexStr;
+            std::vector<FaceVertex> tokens;
 
+            while (ss >> vertexStr) {
                 FaceVertex fVert = {0, 0, 0};
                 std::stringstream vertexSS(vertexStr);
-                std::string v, vt, vn;
+                
+                size_t firstSlash = vertexStr.find('/');
+                size_t secondSlash = (firstSlash != std::string::npos) ? vertexStr.find('/', firstSlash + 1) : std::string::npos;
 
-                std::getline(vertexSS, v, '/');
-                std::getline(vertexSS, vt, '/');
-                std::getline(vertexSS, vn, '/');
+                std::string v = vertexStr.substr(0, firstSlash);
+                fVert.vIdx = (!v.empty()) ? std::stoi(v) : 0;
 
-                fVert.vIdx = !v.empty() ? std::stoi(v) : 0;
-                fVert.vtIdx = !vt.empty() ? std::stoi(vt) : 0;
-                fVert.vnIdx = !vn.empty() ? std::stoi(vn) : 0;
+                if (firstSlash != std::string::npos) {
+                    std::string vt = vertexStr.substr(firstSlash + 1, secondSlash - firstSlash - 1);
+                    fVert.vtIdx = (!vt.empty()) ? std::stoi(vt) : 0;
+                }
+                if (secondSlash != std::string::npos) {
+                    std::string vn = vertexStr.substr(secondSlash + 1);
+                    fVert.vnIdx = (!vn.empty()) ? std::stoi(vn) : 0;
+                }
 
-                face_vertices.push_back(fVert);
+                tokens.push_back(fVert);
+            }
+
+            for (size_t i = 1; i < tokens.size() - 1; i++) {
+                face_vertices.push_back(tokens[0]);
+                face_vertices.push_back(tokens[i]);
+                face_vertices.push_back(tokens[i + 1]);
             }
         }
     }
@@ -60,13 +72,18 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
 
     std::map<ObjVertex, GLuint, VertexComparator> uniqueVertices;
 
+    vertices.clear();
+    indices.clear();
+
+    vertices.reserve(face_vertices.size());
+    indices.reserve(face_vertices.size());
+
     for (const auto& fVert : face_vertices) {
         ObjVertex vertex;
 
         if (fVert.vIdx > 0) {
             vertex.position = temp_positions[fVert.vIdx - 1];
         }
-        if (fVert.vtIdx > 0) continue;
         
         auto it = uniqueVertices.find(vertex);
         if(it == uniqueVertices.end()) {
@@ -119,4 +136,7 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
             vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
         }
     }
+
+    face_vertices.clear();
+    face_vertices.shrink_to_fit();
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(PAINRenderer VERSION 0.1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -35,15 +35,22 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         ${CMAKE_SOURCE_DIR}/lib/glfw/include 
         ${CMAKE_SOURCE_DIR}/lib/freetype/include/
         ${CMAKE_SOURCE_DIR}/lib/freetype/include/freetype2
+        ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs
     )
 
     target_link_directories(PAINRenderer PRIVATE ${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64)
+
+    add_library(tinyfiledialogs STATIC
+        ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.c
+        ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
+    )
 
     target_link_libraries(PAINRenderer PRIVATE 
         "${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64/libglfw3.a" 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libz.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
+        tinyfiledialogs
         opengl32 
         gdi32 
         user32 
@@ -51,6 +58,9 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         bcrypt
         mingw32 
         moldname
+        comdlg32
+        ole32
+        shell32
     )
 else()
     find_package(glfw3 CONFIG REQUIRED)
@@ -74,10 +84,21 @@ else()
         button_element.cpp
     )
 
-    target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype)
+    add_library(tinyfiledialogs STATIC
+        ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.c
+        ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
+    )
+
+    target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype tinyfiledialogs)
+
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        target_link_libraries(PAINRenderer PRIVATE comdlg32 ole32 shell32)
+    endif()
 endif()
 
-target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+
+target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs)
 
 add_custom_command(
     TARGET PAINRenderer POST_BUILD

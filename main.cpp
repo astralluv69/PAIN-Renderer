@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <chrono>
+#include <tinyfiledialogs.h>
 
 #include "util.h"
 #include "mesh.h"
@@ -20,7 +21,12 @@ GLFWwindow* window;
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
 int main(int, char**){
-    bool wireframeToggle = true;
+    bool wireframeToggle = false;
+    bool testModel = false;
+    bool updateMesh = false;
+    std::optional<std::string> activePath = std::nullopt;
+
+    const char* acceptedFileFilters[] = {"*.obj"};
 
     glfwInit();
 
@@ -45,7 +51,8 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
-    ObjMesh testObj("models/stanford-bunny.obj");
+    ObjMesh testObj("models/standford-bunny.obj");
+    std::optional<ObjMesh> objFileObj = std::nullopt;
 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightPos = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -64,15 +71,15 @@ int main(int, char**){
 
     Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 
-    ButtonElement testButton(
-        "testButton", 
+    ButtonElement wireframeButton(
+        "wireframeButton", 
         glm::vec2(0.0f, 0.0f), 
         glm::vec2(80.0f, 20.0f), 
         glm::vec3(1.0f, 1.0f, 1.0f), 
         glm::vec3(0.35f, 0.0f, 0.73f), 
         [&wireframeToggle](){
             static double timer = glfwGetTime();
-            if (glfwGetTime() - timer > 0.5) {
+            if (glfwGetTime() - timer > 0.2) {
                 wireframeToggle = !wireframeToggle;
                 timer = glfwGetTime();
             }
@@ -83,8 +90,57 @@ int main(int, char**){
         glm::vec3(0.0f, 0.0f, 0.0f)
     );
 
+    ButtonElement changeFileButton(
+        "changeFileButton",
+        glm::vec2(80.0f, 0.0f),
+        glm::vec2(160.0f, 20.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.35f, 0.0f, 0.73f),
+        [&activePath, &acceptedFileFilters, &testModel, &updateMesh](){
+            const char* newPath = tinyfd_openFileDialog(
+                "Select the Model to View",
+                "",
+                1,
+                acceptedFileFilters,
+                "Model Files (*.obj)",
+                0
+            );
+
+            if(newPath != nullptr) {
+                activePath = std::string(newPath);
+                testModel = false;
+                updateMesh = true;
+            }
+        },
+        [](){},
+        "Change File",
+        12,
+        glm::vec3(0.0f, 0.0f, 0.0f)  
+    );
+
+    ButtonElement testButton(
+        "testButton", 
+        glm::vec2(1200.0f, 0.0f), 
+        glm::vec2(1280.0f, 20.0f), 
+        glm::vec3(1.0f, 1.0f, 1.0f), 
+        glm::vec3(0.35f, 0.0f, 0.73f), 
+        [&testModel](){
+            static double timer = glfwGetTime();
+            if (glfwGetTime() - timer > 0.2) {
+                testModel = !testModel;
+                timer = glfwGetTime();
+            }
+        }, 
+        [](){},
+        "Toggle Test Model", 
+        10,
+        glm::vec3(0.0f, 0.0f, 0.0f)
+    );
+
     UiElement ribbon("ribbon");
     ribbon.AddElement(ribbonBg);
+    ribbon.AddElement(wireframeButton);
+    ribbon.AddElement(changeFileButton);
     ribbon.AddElement(testButton);
     
     double end;
@@ -105,11 +161,30 @@ int main(int, char**){
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
+        if(activePath.has_value() && updateMesh) {
+            if(activePath->substr(activePath->size() - 3) == "obj") {
+                objFileObj = ObjMesh(activePath->c_str());
+            }   
+
+            updateMesh = false;
+        }
 
         if(wireframeToggle) {
-            testObj.DrawWireframe(objModelShader, camera, objModel);
+            if(testModel) {
+                testObj.DrawWireframe(objModelShader, camera, objModel);
+            } else {
+                if(objFileObj.has_value()) {
+                    objFileObj->DrawWireframe(objModelShader, camera, objModel);
+                }
+            }
         } else {
-            testObj.Draw(objModelShader, camera, objModel);
+            if(testModel) {
+                testObj.Draw(objModelShader, camera, objModel);
+            } else {
+                if(objFileObj.has_value()) {
+                    objFileObj->Draw(objModelShader, camera, objModel);
+                }
+            }
         }
 
         ribbon.Draw(uiProj);
