@@ -70,7 +70,7 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
 
     file.close();
 
-    std::map<ObjVertex, GLuint, VertexComparator> uniqueVertices;
+    std::map<ObjVertex, GLuint, ObjVertexComparator> uniqueVertices;
 
     vertices.clear();
     indices.clear();

@@ -1,16 +1,21 @@
 #include "obj_mesh.h"
 
-ObjMesh::ObjMesh(const char* filepath) {
-    OBJ_Load objFile(filepath);
+ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
+    std::string path(filepath);
+    std::string fileType = path.substr(path.size() - 3);
+    if (fileType == "obj") {
+        OBJ_Load objFile(filepath);
+        objFile.loadObj(meshVertices, meshIndices);
+        willClip = false;
+    } else if (fileType == "stl") {
+        STL_Load stlFile(filepath);
+        stlFile.loadStl(meshVertices, meshIndices, willClip);
+    }
 
-    objFile.loadObj(meshVertices, meshIndices);
-
-    /*
     std::cout << "--- Mesh Loaded ---" << std::endl;
     std::cout << "Unique Vertices: " << meshVertices.size() << std::endl;
     std::cout << "Indices Count: " << meshIndices.size() << std::endl;
     std::cout << "Total Triangles: " << meshIndices.size() / 3 << std::endl;
-    */
 
     meshVBO.Delete();
     meshEBO.Delete();

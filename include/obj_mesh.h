@@ -8,6 +8,7 @@
 #include "ebo.h"
 #include "camera.h"
 #include "obj_loader.h"
+#include "stl_loader.h"
 
 class ObjMesh {
     public:
@@ -18,7 +19,7 @@ class ObjMesh {
         VBO meshVBO = VBO(meshVertices);
         EBO meshEBO = EBO(meshIndices);
 
-        ObjMesh(const char* filepath);
+        ObjMesh(const char* filepath, bool& willClip);
 
         void Draw(Shader& shader, Camera& camera, glm::mat4 model);
         void DrawWireframe(Shader& shader, Camera& camera, glm::mat4 model);

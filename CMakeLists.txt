@@ -23,6 +23,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         obj_mesh.cpp
         obj_loader.cpp
         button_element.cpp
+        stl_loader.cpp
     )
 
     target_link_options(PAINRenderer PRIVATE
@@ -82,6 +83,7 @@ else()
         obj_mesh.cpp
         obj_loader.cpp
         button_element.cpp
+        stl_loader.cpp
     )
 
     add_library(tinyfiledialogs STATIC

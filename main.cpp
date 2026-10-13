@@ -13,28 +13,27 @@
 #include "obj_mesh.h"
 #include "ui_element.h"
 
-int width = 1280;
-int height = 720;
-const char* title = "PAIN Renderer";
-GLFWwindow* window;
-
-glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
-
-glm::vec3 buttonColor(0.16f, 0.09f, 0.24f);
-glm::vec3 buttonHoverColor(0.35f, 0.0f, 0.73f);
-glm::vec3 ribbonBgColor(0.43f, 0.35f, 0.53f);
-
 int main(int, char**){
+    int width = 1280;
+    int height = 720;
+    const char* title = "PAIN Renderer";
+    GLFWwindow* window;
+
+    glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
+
+    glm::vec3 buttonColor(0.16f, 0.09f, 0.24f);
+    glm::vec3 buttonHoverColor(0.35f, 0.0f, 0.73f);
+    glm::vec3 ribbonBgColor(0.43f, 0.35f, 0.53f);
+
     bool wireframeToggle = false;
-    bool testModel = false;
+    bool testModel = true;
     bool updateMesh = false;
     std::optional<std::string> activePath = std::nullopt;
-
-    const char* acceptedFileFilters[] = {"*.obj"};
+    bool willClip = false;
 
     glfwInit();
 
-    std::cout << "Hello from GLFW Version " << glfwGetVersionString() << std::endl;
+    std::cout << "GLFW Version " << glfwGetVersionString() << std::endl;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -55,7 +54,7 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
-    ObjMesh testObj("models/stanford-bunny.obj");
+    ObjMesh testObj("models/stanford-bunny.obj", willClip);
     std::optional<ObjMesh> objFileObj = std::nullopt;
 
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -64,6 +63,9 @@ int main(int, char**){
     glm::vec3 objPos = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::mat4 objModel = glm::mat4(1.0f);
     objModel = glm::translate(objModel, objPos);
+    objModel = glm::scale(objModel, glm::vec3(0.1f, 0.1f, 0.1f));
+
+    glm::mat4 testObjModel = glm::translate(glm::mat4(1.0f), objPos);
 
     Shader objModelShader("shaders/objModel.vert", "shaders/objModel.frag");
     objModelShader.loadLightColorAndPos(lightColor, lightPos);
@@ -100,13 +102,15 @@ int main(int, char**){
         glm::vec2(160.0f, 20.0f),
         buttonColor, 
         buttonHoverColor,
-        [&activePath, &acceptedFileFilters, &testModel, &updateMesh](){
+        [&activePath, &testModel, &updateMesh](){
+            const char* acceptFileFilters[] = {"*.obj", "*.stl"};
+
             const char* newPath = tinyfd_openFileDialog(
                 "Select the Model to View",
                 "",
-                1,
-                acceptedFileFilters,
-                "Model Files (*.obj)",
+                2,
+                acceptFileFilters,
+                "Model Files (*.obj, *.stl)",
                 0
             );
 
@@ -166,16 +170,20 @@ int main(int, char**){
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
         if(activePath.has_value() && updateMesh) {
-            if(activePath->substr(activePath->size() - 3) == "obj") {
-                objFileObj = ObjMesh(activePath->c_str());
-            }   
+            objFileObj = ObjMesh(activePath->c_str(), willClip);  
+
+            if (willClip) {
+                objModel = glm::scale(glm::translate(glm::mat4(1.0f), objPos), glm::vec3(0.01f, 0.01f, 0.01f));
+            } else {
+                objModel = glm::translate(glm::mat4(1.0f), objPos);
+            }
 
             updateMesh = false;
         }
 
         if(wireframeToggle) {
             if(testModel) {
-                testObj.DrawWireframe(objModelShader, camera, objModel);
+                testObj.DrawWireframe(objModelShader, camera, testObjModel);
             } else {
                 if(objFileObj.has_value()) {
                     objFileObj->DrawWireframe(objModelShader, camera, objModel);
@@ -183,7 +191,7 @@ int main(int, char**){
             }
         } else {
             if(testModel) {
-                testObj.Draw(objModelShader, camera, objModel);
+                testObj.Draw(objModelShader, camera, testObjModel);
             } else {
                 if(objFileObj.has_value()) {
                     objFileObj->Draw(objModelShader, camera, objModel);
@@ -210,6 +218,9 @@ int main(int, char**){
     ribbon.Delete();
     testObj.Delete();
     objModelShader.Delete();
+    if (objFileObj.has_value()) {
+        objFileObj->Delete();
+    }
 
     glfwTerminate();
 
