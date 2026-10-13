@@ -12,10 +12,12 @@ ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
         stlFile.loadStl(meshVertices, meshIndices, willClip);
     }
 
+    /*
     std::cout << "--- Mesh Loaded ---" << std::endl;
     std::cout << "Unique Vertices: " << meshVertices.size() << std::endl;
     std::cout << "Indices Count: " << meshIndices.size() << std::endl;
     std::cout << "Total Triangles: " << meshIndices.size() / 3 << std::endl;
+    */
 
     meshVBO.Delete();
     meshEBO.Delete();
