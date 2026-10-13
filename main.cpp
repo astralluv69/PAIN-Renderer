@@ -20,6 +20,10 @@ GLFWwindow* window;
 
 glm::mat4 uiProj = glm::ortho(0.0f, (float)width, (float)height, 0.0f);
 
+glm::vec3 buttonColor(0.16f, 0.09f, 0.24f);
+glm::vec3 buttonHoverColor(0.35f, 0.0f, 0.73f);
+glm::vec3 ribbonBgColor(0.43f, 0.35f, 0.53f);
+
 int main(int, char**){
     bool wireframeToggle = false;
     bool testModel = false;
@@ -69,14 +73,14 @@ int main(int, char**){
 
     Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
 
-    Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), ribbonBgColor);
 
     ButtonElement wireframeButton(
         "wireframeButton", 
         glm::vec2(0.0f, 0.0f), 
         glm::vec2(80.0f, 20.0f), 
-        glm::vec3(1.0f, 1.0f, 1.0f), 
-        glm::vec3(0.35f, 0.0f, 0.73f), 
+        buttonColor, 
+        buttonHoverColor, 
         [&wireframeToggle](){
             static double timer = glfwGetTime();
             if (glfwGetTime() - timer > 0.2) {
@@ -87,15 +91,15 @@ int main(int, char**){
         [](){},
         "Toggle Wire", 
         12,
-        glm::vec3(0.0f, 0.0f, 0.0f)
+        glm::vec3(1.0f, 1.0f, 1.0f)
     );
 
     ButtonElement changeFileButton(
         "changeFileButton",
         glm::vec2(80.0f, 0.0f),
         glm::vec2(160.0f, 20.0f),
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(0.35f, 0.0f, 0.73f),
+        buttonColor, 
+        buttonHoverColor,
         [&activePath, &acceptedFileFilters, &testModel, &updateMesh](){
             const char* newPath = tinyfd_openFileDialog(
                 "Select the Model to View",
@@ -115,15 +119,15 @@ int main(int, char**){
         [](){},
         "Change File",
         12,
-        glm::vec3(0.0f, 0.0f, 0.0f)  
+        glm::vec3(1.0f, 1.0f, 1.0f)  
     );
 
     ButtonElement testButton(
         "testButton", 
         glm::vec2(1200.0f, 0.0f), 
         glm::vec2(1280.0f, 20.0f), 
-        glm::vec3(1.0f, 1.0f, 1.0f), 
-        glm::vec3(0.35f, 0.0f, 0.73f), 
+        buttonColor, 
+        buttonHoverColor, 
         [&testModel](){
             static double timer = glfwGetTime();
             if (glfwGetTime() - timer > 0.2) {
@@ -134,7 +138,7 @@ int main(int, char**){
         [](){},
         "Toggle Test Model", 
         10,
-        glm::vec3(0.0f, 0.0f, 0.0f)
+        glm::vec3(1.0f, 1.0f, 1.0f)
     );
 
     UiElement ribbon("ribbon");
