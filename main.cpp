@@ -13,6 +13,30 @@
 #include "obj_mesh.h"
 #include "ui_element.h"
 
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if (camera) {
+        camera->handleMouseButtons(window, button, action, mods);
+    }
+}
+
+void mousePosCallback(GLFWwindow* window, double xPos, double yPos) {
+    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if (camera) {
+        camera->handleMouseMovement(window, xPos, yPos);
+    }
+}
+
+void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if (camera) {
+        camera->handleMouseScroll(xOffset, yOffset);
+    }
+}
+
 int main(int, char**){
     int width = 1280;
     int height = 720;
@@ -54,6 +78,12 @@ int main(int, char**){
 
     glViewport(0, 0, width, height);
 
+    glEnable(GL_DEPTH_TEST);
+    glfwSwapInterval(1);
+    glfwSetCursorPosCallback(window, mousePosCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetScrollCallback(window, mouseScrollCallback);
+
     ObjMesh testObj("models/stanford-bunny.obj", willClip);
     std::optional<ObjMesh> objFileObj = std::nullopt;
 
@@ -70,10 +100,8 @@ int main(int, char**){
     Shader objModelShader("shaders/objModel.vert", "shaders/objModel.frag");
     objModelShader.loadLightColorAndPos(lightColor, lightPos);
 
-    glEnable(GL_DEPTH_TEST);
-    glfwSwapInterval(1);
-
     Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
+    glfwSetWindowUserPointer(window, &camera);
 
     Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), ribbonBgColor);
 
@@ -156,6 +184,8 @@ int main(int, char**){
     double dt = -1;
 
     while(!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
@@ -163,7 +193,7 @@ int main(int, char**){
         if (dt >= 0) {
             ribbon.Update(window, dt);
 
-            camera.Inputs(window, dt);
+            camera.Inputs(dt);
 
             //glfwSetWindowTitle(window, ("PAIN Renderer - FPS " + std::to_string(1.0f / dt)).c_str());
         }
@@ -202,8 +232,6 @@ int main(int, char**){
         ribbon.Draw(uiProj);
 
         glfwSwapBuffers(window);
-
-        glfwPollEvents();
 
         GLenum err;
         while ((err = glGetError()) != GL_NO_ERROR) {

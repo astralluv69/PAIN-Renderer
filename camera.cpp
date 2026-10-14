@@ -3,6 +3,8 @@
 Camera::Camera(int width, int height, glm::vec3 position) {
     Camera::width = width;
     Camera::height = height;
+    currentX = width / 2;
+    currentY = height / 2;
     Position = position;
     Orientation = glm::normalize(glm::vec3(0.0f, 0.0f, 0.0f) - Position);
 }
@@ -21,7 +23,8 @@ void Camera::Matrix(Shader& shader, const char* uniform) {
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(camMatrix));
 }
 
-void Camera::Inputs(GLFWwindow* window, double dt) {
+void Camera::Inputs(double dt) {
+    /*
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
 
@@ -68,4 +71,7 @@ void Camera::Inputs(GLFWwindow* window, double dt) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         firstClick = true;
     }
+    */
+
+    currentDt = dt;
 }
