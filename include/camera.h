@@ -88,10 +88,10 @@ class Camera {
 
         void handleMouseScroll(double xOffset, double yOffset) {
             if (yOffset < 0) {
-                Position += (float)(speed * currentDt) * -Orientation;
+                Position += (float)(speed / 1.25 * currentDt) * -Orientation;
             }
             if (yOffset > 0) {
-                Position += (float)(speed * currentDt) * Orientation;
+                Position += (float)(speed / 1.25 * currentDt) * Orientation;
             }
         };
     
@@ -110,7 +110,7 @@ class Camera {
         bool isPanning = false;
         bool isGrabbing = false;
 
-        float speed = 5.0f;
+        float speed = 15.0f;
         float sensitivity = 200.0f;
 };
 
