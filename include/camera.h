@@ -73,25 +73,25 @@ class Camera {
 
             if (isGrabbing && yPos > 20 && !isPanning) {
                 if (dx > 0) {
-                    Position += (float)(speed / 2 * currentDt) * glm::normalize(glm::cross(Orientation, Up));
+                    Position += (float)(speed / 3 * currentDt) * glm::normalize(glm::cross(Orientation, Up));
                 } else if (dx < 0) {
-                    Position += (float)(speed / 2 * currentDt) * -glm::normalize(glm::cross(Orientation, Up));
+                    Position += (float)(speed / 3 * currentDt) * -glm::normalize(glm::cross(Orientation, Up));
                 }
 
                 if (dy > 0) {
-                    Position += (float)(speed / 2 * currentDt) * -Up;
+                    Position += (float)(speed / 3 * currentDt) * -Up;
                 } if (dy < 0) {
-                    Position += (float)(speed / 2 * currentDt) * Up;
+                    Position += (float)(speed / 3 * currentDt) * Up;
                 }
             }
         };
 
         void handleMouseScroll(double xOffset, double yOffset) {
             if (yOffset < 0) {
-                Position += (float)(speed * currentDt) * -Orientation;
+                Position += (float)(speed / 1.25 * currentDt) * -Orientation;
             }
             if (yOffset > 0) {
-                Position += (float)(speed * currentDt) * Orientation;
+                Position += (float)(speed / 1.25 * currentDt) * Orientation;
             }
         };
     
@@ -110,7 +110,7 @@ class Camera {
         bool isPanning = false;
         bool isGrabbing = false;
 
-        float speed = 5.0f;
+        float speed = 15.0f;
         float sensitivity = 200.0f;
 };
 
