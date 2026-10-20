@@ -37,6 +37,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         ${CMAKE_SOURCE_DIR}/lib/freetype/include/
         ${CMAKE_SOURCE_DIR}/lib/freetype/include/freetype2
         ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs
+        ${CMAKE_SOURCE_DIR}/lib/lib3mf/include
     )
 
     target_link_directories(PAINRenderer PRIVATE ${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64)
@@ -51,6 +52,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libz.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
+        "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.dll.a"
         tinyfiledialogs
         opengl32 
         gdi32 
@@ -67,6 +69,7 @@ else()
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(OpenGL REQUIRED)
+    find_package(lib3mf REQUIRED)
 
     add_executable(PAINRenderer 
         main.cpp
@@ -91,7 +94,7 @@ else()
         ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
     )
 
-    target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype tinyfiledialogs)
+    target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype tinyfiledialogs lib3mf::lib3mf)
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         target_link_libraries(PAINRenderer PRIVATE comdlg32 ole32 shell32)
