@@ -37,6 +37,14 @@ void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     }
 }
 
+void keyboardKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if (camera) {
+        camera->handleKeyboardKeys(window, key, scancode, action, mods);
+    }
+}
+
 int main(int, char**){
     int width = 1280;
     int height = 720;
@@ -83,6 +91,7 @@ int main(int, char**){
     glfwSetCursorPosCallback(window, mousePosCallback);
     glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetScrollCallback(window, mouseScrollCallback);
+    glfwSetKeyCallback(window, keyboardKeyCallback);
 
     ObjMesh testObj("models/stanford-bunny.obj", willClip);
     std::optional<ObjMesh> objFileObj = std::nullopt;

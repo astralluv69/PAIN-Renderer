@@ -13,7 +13,21 @@ void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 proj = glm::mat4(1.0f);
 
-    view = glm::lookAt(Position, Position + Orientation, Up);
+    if (isOrbiting) {
+        float yawRad = glm::radians(yaw);
+        float pitchRad = glm::radians(pitch);
+
+        glm::vec3 camOffset;
+        camOffset.x = radius * cos(pitchRad) * cos(yawRad);
+        camOffset.y = radius * sin(pitchRad);
+        camOffset.z = radius * cos(pitchRad) * sin(yawRad);
+
+        Position = camOffset;
+        view = glm::lookAt(Position, glm::vec3(0.0f, 0.0f, 0.0f), Up);
+    } else {
+        view = glm::lookAt(Position, Position + Orientation, Up);
+    }
+
     proj = glm::perspective(glm::radians(FOVdeg), (float) width / height, nearPlane, farPlane);
 
     camMatrix = proj * view;
@@ -24,54 +38,5 @@ void Camera::Matrix(Shader& shader, const char* uniform) {
 }
 
 void Camera::Inputs(double dt) {
-    /*
-    double mouseX, mouseY;
-    glfwGetCursorPos(window, &mouseX, &mouseY);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * Orientation;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * -Orientation;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * -glm::normalize(glm::cross(Orientation, Up));
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * glm::normalize(glm::cross(Orientation, Up));
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * Up;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        Position += (float)(speed * dt) * -Up;
-    }
-
-    if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) && (mouseY > 20)) {
-        if (firstClick) {
-            glfwSetCursorPos(window, (width / 2), (height / 2));
-            firstClick = false;
-        }
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-        float rotX = sensitivity * (float) (mouseY - (height / 2)) / height;
-        float rotY = sensitivity * (float) (mouseX - (width / 2)) / width;
-
-        glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rotX), glm::normalize(glm::cross(Orientation, Up)));
-
-        if (!((glm::angle(newOrientation, Up) <= glm::radians(5.0f)) || (glm::angle(newOrientation, -Up) <= glm::radians(5.0f)))) {
-            Orientation = newOrientation;
-        }
-
-        Orientation = glm::rotate(Orientation, glm::radians(-rotY), Up);
-        glfwSetCursorPos(window, (width / 2), (height / 2));
-    }
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        firstClick = true;
-    }
-    */
-
     currentDt = dt;
 }
