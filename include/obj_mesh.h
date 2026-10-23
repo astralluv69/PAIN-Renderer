@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "obj_loader.h"
 #include "stl_loader.h"
+#include "3mf_loader.h"
 
 class ObjMesh {
     public:

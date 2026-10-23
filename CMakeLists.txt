@@ -24,6 +24,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         obj_loader.cpp
         button_element.cpp
         stl_loader.cpp
+        3mf_loader.cpp
     )
 
     target_link_options(PAINRenderer PRIVATE
@@ -87,6 +88,7 @@ else()
         obj_loader.cpp
         button_element.cpp
         stl_loader.cpp
+        3mf_loader.cpp
     )
 
     add_library(tinyfiledialogs STATIC
@@ -101,9 +103,7 @@ else()
     endif()
 endif()
 
-
-
-target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs)
+target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs ${CMAKE_SOURCE_DIR}/lib/lib3mf/include)
 
 add_custom_command(
     TARGET PAINRenderer POST_BUILD

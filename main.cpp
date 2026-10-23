@@ -8,7 +8,6 @@
 #include <chrono>
 #include <tinyfiledialogs.h>
 
-#include "util.h"
 #include "mesh.h"
 #include "obj_mesh.h"
 #include "ui_element.h"
@@ -140,14 +139,14 @@ int main(int, char**){
         buttonColor, 
         buttonHoverColor,
         [&activePath, &testModel, &updateMesh](){
-            const char* acceptFileFilters[] = {"*.obj", "*.stl"};
+            const char* acceptFileFilters[] = {"*.obj", "*.stl", "*.3mf"};
 
             const char* newPath = tinyfd_openFileDialog(
                 "Select the Model to View",
                 "",
-                2,
+                3,
                 acceptFileFilters,
-                "Model Files (*.obj, *.stl)",
+                "Model Files (*.obj, *.stl, *.3mf)",
                 0
             );
 

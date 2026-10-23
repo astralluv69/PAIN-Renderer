@@ -1,6 +1,12 @@
 #ifndef LOADER_BASE_H
 #define LOADER_BASE_H
 
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <map>
+
 #include "vbo.h"
 
 struct FaceVertex {

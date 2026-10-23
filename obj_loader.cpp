@@ -98,10 +98,6 @@ void OBJ_Load::loadObj(std::vector<ObjVertex>& vertices, std::vector<GLuint>& in
 
     for (ObjVertex& v : vertices) v.normal = glm::vec3(0.0f);
 
-    for (ObjVertex vertex : vertices) {
-        vertex.normal = glm::vec3(0.0f);
-    }
-
     for (size_t i = 0; i < indices.size(); i += 3) {
         if (i + 2 >= indices.size()) break;
 

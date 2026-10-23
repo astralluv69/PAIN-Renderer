@@ -1,12 +1,6 @@
 #ifndef OBJ_LOADER_CLASS_H
 #define OBJ_LOADER_CLASS_H
 
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
-
 #include "vao.h"
 #include "vbo.h"
 #include "ebo.h"

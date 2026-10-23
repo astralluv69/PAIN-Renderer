@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include "util.h"
 #include "text_element.h"
 
 class Element {
