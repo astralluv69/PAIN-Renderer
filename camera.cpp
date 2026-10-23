@@ -5,6 +5,7 @@ Camera::Camera(int width, int height, glm::vec3 position) {
     Camera::height = height;
     currentX = width / 2;
     currentY = height / 2;
+    startPos = position;
     Position = position;
     Orientation = glm::normalize(glm::vec3(0.0f, 0.0f, 0.0f) - Position);
 }

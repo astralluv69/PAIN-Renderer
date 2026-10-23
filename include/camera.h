@@ -30,6 +30,11 @@ class Camera {
                     isHoldingShift = false;
                 }
             }
+
+            if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+                Position = startPos;
+                Orientation = glm::normalize(glm::vec3(0.0f) - Position);
+            }
         };
 
         void handleMouseButtons(GLFWwindow* window, int button, int action, int mods) {
@@ -138,6 +143,7 @@ class Camera {
         };
     
     private:
+        glm::vec3 startPos;
         glm::vec3 Position;
         glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
