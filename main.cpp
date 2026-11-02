@@ -111,6 +111,10 @@ int main(int, char**){
     Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
     glfwSetWindowUserPointer(window, &camera);
 
+    double end;
+    double begin = glfwGetTime();
+    double dt = -1;
+
     Element ribbonBg("ribbonBg", glm::vec2(0.0f, 0.0f), glm::vec2(1280.0f, 20.0f), ribbonBgColor);
 
     ButtonElement wireframeButton(
@@ -181,15 +185,46 @@ int main(int, char**){
         glm::vec3(1.0f, 1.0f, 1.0f)
     );
 
+    ButtonElement exportFileButton(
+        "exportButton",
+        glm::vec2(160.0f, 0.0f),
+        glm::vec2(240.0f, 20.0f),
+        buttonColor,
+        buttonHoverColor,
+        [&objFileObj](){
+            const char* acceptFileFilters[] = {"*.obj", "*.stl", "*.3mf"};
+
+            const char* filepath = tinyfd_saveFileDialog(
+                "Save Model As",
+                "out.obj",
+                3,
+                acceptFileFilters,
+                "Model Files (*.obj, *.stl, *.3mf)"
+            );
+
+            if (filepath != nullptr) {
+                std::ofstream outFile(filepath);
+                if (outFile.is_open()) {
+                    outFile << "Please work" << std::endl;
+
+                    outFile.close();
+                } else {
+                    std::cerr << "Failed to open file to export to" << std::endl;
+                }
+            }
+        },
+        [](){},
+        "Export File",
+        12,
+        glm::vec3(1.0f)
+    );
+
     UiElement ribbon("ribbon");
     ribbon.AddElement(ribbonBg);
     ribbon.AddElement(wireframeButton);
     ribbon.AddElement(changeFileButton);
     ribbon.AddElement(testButton);
-    
-    double end;
-    double begin = glfwGetTime();
-    double dt = -1;
+    //ribbon.AddElement(exportFileButton);
 
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
