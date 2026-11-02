@@ -69,7 +69,7 @@ class Camera {
             }
             if (button == GLFW_MOUSE_BUTTON_RIGHT) {
                 if (action == GLFW_PRESS && currentY > 20) {
-                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
                     isGrabbing = true;
                 }
                 if (action == GLFW_RELEASE) {

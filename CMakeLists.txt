@@ -103,13 +103,13 @@ else()
     )
 
     target_link_libraries(PAINRenderer PRIVATE glfw OpenGL::GL Freetype::Freetype tinyfiledialogs lib3mf::lib3mf)
-
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        target_link_libraries(PAINRenderer PRIVATE comdlg32 ole32 shell32)
-    endif()
 endif()
 
-target_include_directories(PAINRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs ${CMAKE_SOURCE_DIR}/lib/lib3mf/include)
+target_include_directories(PAINRenderer PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include 
+    ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs 
+    ${CMAKE_SOURCE_DIR}/lib/lib3mf/include
+)
 
 add_custom_command(
     TARGET PAINRenderer POST_BUILD
