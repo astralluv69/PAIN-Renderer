@@ -79,7 +79,11 @@ else()
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(OpenGL REQUIRED)
-    find_package(lib3mf REQUIRED)
+
+    add_library(lib3mf::lib3mf UNKNOWN IMPORTED)
+    set_target_properties(lib3mf::lib3mf PROPERTIES
+        IMPORTED_LOCATION "/lib/x86_64-linux-gnu/lib3MF.so"
+    )
 
     add_executable(PAINRenderer 
         main.cpp
