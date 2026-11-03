@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared library" FORCE)
 
     add_definitions(-DGLFWSTATIC)
 
@@ -47,19 +48,12 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
     )
 
-    add_library(lib3mf STATIC IMPORTED GLOBAL)
-
-    set_target_properties(lib3mf PROPERTIES
-        IMPORTED_LOCATION_RELEASE ${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.dll.a
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/lib/lib3mf/include
-    )
-
     target_link_libraries(PAINRenderer PRIVATE 
         "${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64/libglfw3.a" 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libz.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
-        lib3mf
+        "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.dll.a"
         tinyfiledialogs
         opengl32 
         gdi32 
@@ -71,6 +65,15 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         comdlg32
         ole32
         shell32
+        shlwapi
+        rpcrt4
+    )
+
+    add_custom_command(
+        TARGET PAINRenderer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/lib/lib3mf/bin/lib3mf.dll"
+                "$<TARGET_FILE_DIR:PAINRenderer>"   
     )
 else()
     find_package(glfw3 CONFIG REQUIRED)
@@ -108,7 +111,7 @@ endif()
 target_include_directories(PAINRenderer PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
     ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs 
-    ${CMAKE_SOURCE_DIR}/lib/lib3mf/include
+    ${CMAKE_SOURCE_DIR}/lib/lib3mf/include/
 )
 
 add_custom_command(
