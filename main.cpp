@@ -192,24 +192,58 @@ int main(int, char**){
         buttonColor,
         buttonHoverColor,
         [&objFileObj](){
-            const char* acceptFileFilters[] = {"*.obj", "*.stl", "*.3mf"};
+            if (objFileObj.has_value()) {
+                std::cout << "Attempting to Export File" << std::endl;
 
-            const char* filepath = tinyfd_saveFileDialog(
-                "Save Model As",
-                "out.obj",
-                3,
-                acceptFileFilters,
-                "Model Files (*.obj, *.stl, *.3mf)"
-            );
+                const char* acceptFileFilters[] = {"*.obj", "*.stl", "*.3mf"};
 
-            if (filepath != nullptr) {
-                std::ofstream outFile(filepath);
-                if (outFile.is_open()) {
-                    outFile << "Please work" << std::endl;
+                const char* filepath = tinyfd_saveFileDialog(
+                    "Save Model As",
+                    "out.obj",
+                    3,
+                    acceptFileFilters,
+                    "Model Files (*.obj, *.stl, *.3mf)"
+                );
 
-                    outFile.close();
-                } else {
-                    std::cerr << "Failed to open file to export to" << std::endl;
+                if (filepath != nullptr) {
+                    std::string path(filepath);
+                    std::string filetype = path.substr(path.size() - 3);
+                    std::stringstream outputStream;
+
+                    std::vector <ObjVertex> vertices = objFileObj->meshVertices;
+                    std::vector <GLuint> indices = objFileObj->meshIndices;
+                    
+                    if (filetype == "obj") {
+                        for (ObjVertex vertex : vertices) {
+                            outputStream << "v " << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << "\n";
+                        }
+
+                        for (size_t i = 0; i < indices.size(); i += 3) {
+                            if (i + 2 >= indices.size()) break;
+
+                            outputStream << "f " << indices[i] + 1 << " "
+                                                 << indices[i + 1] + 1 << " "
+                                                 << indices[i + 2] + 1
+                                                 << "\n";
+                        }
+
+                        outputStream << std::endl;
+                    } else if (filetype == "stl") {
+                        outputStream << "This is an stl file" << std::endl;
+                    } else if (filetype == "3mf") {
+                        outputStream << "This is an 3mf file" << std::endl;
+                    } else {
+                        std::cerr << "Invalid export file type" << std::endl;
+                    }
+
+                    std::ofstream outFile(filepath);
+                    if (outFile.is_open()) {
+                        outFile << outputStream.str() << std::endl;
+
+                        outFile.close();
+                    } else {
+                        std::cerr << "Failed to open file to export to" << std::endl;
+                    }
                 }
             }
         },
@@ -224,7 +258,7 @@ int main(int, char**){
     ribbon.AddElement(wireframeButton);
     ribbon.AddElement(changeFileButton);
     ribbon.AddElement(testButton);
-    //ribbon.AddElement(exportFileButton);
+    ribbon.AddElement(exportFileButton);
 
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
