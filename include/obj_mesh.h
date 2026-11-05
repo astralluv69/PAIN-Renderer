@@ -13,6 +13,7 @@
 
 class ObjMesh {
     public:
+        std::string fileType;
         std::vector <ObjVertex> meshVertices;
         std::vector <GLuint> meshIndices;
         

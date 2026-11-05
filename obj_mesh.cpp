@@ -3,6 +3,7 @@
 ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
     std::string path(filepath);
     std::string fileType = path.substr(path.size() - 3);
+    ObjMesh::fileType = fileType;
     if (fileType == "obj") {
         OBJ_Load objFile(filepath);
         objFile.loadObj(meshVertices, meshIndices);

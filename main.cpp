@@ -218,7 +218,9 @@ int main(int, char**){
                             outputStream << "v " << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << "\n";
                         }
 
-                        for (size_t i = 0; i < indices.size(); i += 3) {
+                        bool isStl = objFileObj->fileType == "stl";
+
+                        for (size_t i = 0; i < indices.size(); i += isStl ? 9 : 3) {
                             if (i + 2 >= indices.size()) break;
 
                             outputStream << "f " << indices[i] + 1 << " "
