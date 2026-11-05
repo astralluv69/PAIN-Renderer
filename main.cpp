@@ -202,45 +202,59 @@ int main(int, char**){
                     "out.obj",
                     3,
                     acceptFileFilters,
-                    "Model Files (*.obj, *.stl, *.3mf)"
+                    nullptr
                 );
 
                 if (filepath != nullptr) {
                     std::string path(filepath);
                     std::string filetype = path.substr(path.size() - 3);
-                    std::stringstream outputStream;
 
                     std::vector <ObjVertex> vertices = objFileObj->meshVertices;
                     std::vector <GLuint> indices = objFileObj->meshIndices;
-                    
-                    if (filetype == "obj") {
-                        for (ObjVertex vertex : vertices) {
-                            outputStream << "v " << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << "\n";
-                        }
 
-                        bool isStl = objFileObj->fileType == "stl";
+                    std::ofstream outFile;
 
-                        for (size_t i = 0; i < indices.size(); i += isStl ? 9 : 3) {
-                            if (i + 2 >= indices.size()) break;
-
-                            outputStream << "f " << indices[i] + 1 << " "
-                                                 << indices[i + 1] + 1 << " "
-                                                 << indices[i + 2] + 1
-                                                 << "\n";
-                        }
-
-                        outputStream << std::endl;
+                    if (filetype == "obj" || filetype == "3mf") {
+                        outFile = std::ofstream(filepath);
                     } else if (filetype == "stl") {
-                        outputStream << "This is an stl file" << std::endl;
-                    } else if (filetype == "3mf") {
-                        outputStream << "This is an 3mf file" << std::endl;
+                        outFile = std::ofstream(filepath, std::ios::binary);
                     } else {
                         std::cerr << "Invalid export file type" << std::endl;
                     }
 
-                    std::ofstream outFile(filepath);
                     if (outFile.is_open()) {
-                        outFile << outputStream.str() << std::endl;
+                        if (filetype == "obj") {
+                            outFile = std::ofstream(filepath);
+
+                            for (ObjVertex vertex : vertices) {
+                                outFile << "v " << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << "\n";
+                            }
+
+                            bool isStl = objFileObj->fileType == "stl";
+
+                            for (size_t i = 0; i < indices.size(); i += isStl ? 9 : 3) {
+                                if (i + 2 >= indices.size()) break;
+
+                                outFile << "f " << indices[i] + 1 << " "
+                                                    << indices[i + 1] + 1 << " "
+                                                    << indices[i + 2] + 1
+                                                    << "\n";
+                            }
+
+                            outFile << std::endl;
+                        } else if (filetype == "stl") {
+                            std::string header = "PAINRenderer";
+
+                            uint8_t headerBuffer[80] = {0};
+
+                            for (size_t i = 0; i < header.length(); i++) {
+                                headerBuffer[i] = static_cast<uint8_t>(header[i]);
+                            }
+
+                            outFile.write(reinterpret_cast<const char*>(headerBuffer), 80);
+                        } else if (filetype == "3mf") {
+                            outFile << "This is an 3mf file" << std::endl;
+                        }
 
                         outFile.close();
                     } else {
