@@ -2,7 +2,7 @@
 #define THREEMF_LOADER_CLASS_H
 
 #include <glm/glm.hpp>
-#include "lib3mf_dynamic.hpp"
+#include <lib3mf_implicit.hpp>
 
 #include "loader_base.h"
 

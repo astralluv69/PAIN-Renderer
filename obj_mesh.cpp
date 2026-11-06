@@ -12,7 +12,7 @@ ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
         STL_Load stlFile(filepath);
         stlFile.loadStl(meshVertices, meshIndices, willClip);
     } else if (fileType == "3mf") {
-        ThreeMF_Load threeMFFile(filepath, Lib3MF::CWrapper::loadLibrary("lib3mf.dll"));
+        ThreeMF_Load threeMFFile(filepath, Lib3MF::CWrapper::loadLibrary());
         threeMFFile.load3mf(meshVertices, meshIndices);
         willClip = true;
     }

@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared library" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
 
     add_definitions(-DGLFWSTATIC)
 
@@ -28,11 +30,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         3mf_loader.cpp
     )
 
-    target_link_options(PAINRenderer PRIVATE
-        "-static"
-        "-static-libgcc"
-        "-static-libstdc++"
-    )
+    set_target_properties(PAINRenderer PROPERTIES ENABLE_EXPORTS TRUE)
 
     target_include_directories(PAINRenderer PUBLIC 
         ${CMAKE_SOURCE_DIR}/lib/glfw/include 
@@ -53,7 +51,8 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libz.a"
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
-        "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.dll.a"
+        "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.a"
+        "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/libzip.a"
         tinyfiledialogs
         opengl32 
         gdi32 
@@ -67,14 +66,10 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         shell32
         shlwapi
         rpcrt4
+        uuid
     )
 
-    add_custom_command(
-        TARGET PAINRenderer POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_SOURCE_DIR}/lib/lib3mf/bin/lib3mf.dll"
-                "$<TARGET_FILE_DIR:PAINRenderer>"   
-    )
+    target_compile_definitions(PAINRenderer PRIVATE LIB3MF_STATIC ZIP_STATIC)  
 else()
     find_package(glfw3 CONFIG REQUIRED)
     find_package(Freetype REQUIRED)
