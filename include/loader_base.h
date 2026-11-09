@@ -41,4 +41,14 @@ struct StlVertexComparator {
     };
 };
 
+#pragma pack(push, 1)
+struct StlExportTriangle {
+    glm::vec3 Normal = glm::vec3(0.0f);
+    glm::vec3 v1;
+    glm::vec3 v2;
+    glm::vec3 v3;
+    uint16_t attribute = 0;
+};
+#pragma pack(pop)
+
 #endif

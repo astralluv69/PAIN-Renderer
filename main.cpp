@@ -192,9 +192,9 @@ int main(int, char**){
         buttonColor,
         buttonHoverColor,
         [&objFileObj](){
-            if (objFileObj.has_value()) {
-                std::cout << "Attempting to Export File" << std::endl;
+            using namespace Lib3MF;
 
+            if (objFileObj.has_value()) {
                 const char* acceptFileFilters[] = {"*.obj", "*.stl", "*.3mf"};
 
                 const char* filepath = tinyfd_saveFileDialog(
@@ -252,8 +252,62 @@ int main(int, char**){
                             }
 
                             outFile.write(reinterpret_cast<const char*>(headerBuffer), 80);
+
+                            std::vector<StlExportTriangle> triangles;
+
+                            for (size_t i = 0; i < indices.size(); i += 3) {
+                                if (i + 2 >= indices.size()) break;
+
+                                StlExportTriangle triangle;
+
+                                GLuint idx0 = indices[i];
+                                GLuint idx1 = indices[i + 1];
+                                GLuint idx2 = indices[i + 2];
+
+                                glm::vec3 v1 = vertices[idx0].position;
+                                glm::vec3 v2 = vertices[idx1].position;
+                                glm::vec3 v3 = vertices[idx2].position;
+
+                                triangle.Normal = glm::normalize(glm::cross((v2 - v1), (v3 - v1)));
+                                triangle.v1 = v1;
+                                triangle.v2 = v2;
+                                triangle.v3 = v3;
+
+                                triangles.push_back(triangle);
+                            }
+
+                            uint32_t trianglesCount = static_cast<uint32_t>(triangles.size());
+
+                            outFile.write(reinterpret_cast<const char*>(&trianglesCount), sizeof(trianglesCount));
+
+                            outFile.write(reinterpret_cast<const char*>(triangles.data()), triangles.size() * sizeof(StlExportTriangle));
                         } else if (filetype == "3mf") {
-                            outFile << "This is an 3mf file" << std::endl;
+                            PWrapper wrapper = CWrapper::loadLibrary();
+
+                            PModel model = wrapper->CreateModel();
+
+                            PMeshObject mesh = model->AddMeshObject();
+
+                            std::vector<sPosition> outVerts;
+                            std::vector<sTriangle> outTriangles;
+
+                            for (ObjVertex vertex : vertices) {
+                                outVerts.push_back({vertex.position.x, vertex.position.y, vertex.position.z});
+                            }
+
+                            for (size_t i = 0; i < indices.size(); i +=3) {
+                                if (i + 2 >= indices.size()) break;
+
+                                outTriangles.push_back({indices[i], indices[i + 1], indices[i + 2]});
+                            }
+
+                            mesh->SetGeometry(outVerts, outTriangles);
+
+                            model->AddBuildItem(mesh.get(), wrapper->GetIdentityTransform());
+
+                            PWriter writer = model->QueryWriter("3mf");
+
+                            writer->WriteToFile(filepath);
                         }
 
                         outFile.close();
