@@ -12,6 +12,7 @@
 #include "vbo.h"
 #include "ebo.h"
 #include "shader.h"
+#include "embedded_files.h"
 
 extern "C" {
     #include <ft2build.h>
@@ -33,7 +34,7 @@ class Text {
         glm::vec2 position;
         GLuint size;
         glm::vec3 color;
-        Shader textShader = Shader("shaders/text.vert", "shaders/text.frag");
+        Shader textShader = Shader(textVert, textFrag);
 
         Text(std::string text, glm::vec2 position, glm::vec3 color, GLuint size);
 
@@ -41,7 +42,7 @@ class Text {
         void Delete();
 
     private: 
-        void initText(const char* fontPath, GLuint fontSize);
+        void initText(const unsigned char* fontPath, size_t fontPathLen, GLuint fontSize);
 
         GLuint VAO, VBO;
 };

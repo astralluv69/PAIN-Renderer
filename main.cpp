@@ -11,6 +11,7 @@
 #include "mesh.h"
 #include "obj_mesh.h"
 #include "ui_element.h"
+#include "embedded_files.h"
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
@@ -105,7 +106,7 @@ int main(int, char**){
 
     glm::mat4 testObjModel = glm::translate(glm::mat4(1.0f), objPos);
 
-    Shader objModelShader("shaders/objModel.vert", "shaders/objModel.frag");
+    Shader objModelShader(objModelVert, objModelFrag);
     objModelShader.loadLightColorAndPos(lightColor, lightPos);
 
     Camera camera(width, height, glm::vec3(0.0f, 2.0f, 2.0f));
