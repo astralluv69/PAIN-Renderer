@@ -4,6 +4,46 @@ project(PAINRenderer VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(ASSET_PATHS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/elementDefault.frag"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/elementDefault.vert"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/objModel.frag"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/objModel.vert"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/text.frag"
+    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/text.vert"
+    "${CMAKE_CURRENT_SOURCE_DIR}/fonts/default.ttf"
+)
+
+set(ASSET_VARS
+    "elementDefaultFrag"
+    "elementDefaultVert"
+    "objModelFrag"
+    "objModelVert"
+    "textFrag"
+    "textVert"
+    "defaultFont"
+)
+
+set(GENERATED_SOURCES "")
+
+foreach(ASSET_PATH ASSET_VAR IN ZIP_LISTS ASSET_PATHS ASSET_VARS)
+    get_filename_component(FILE_NAME "${ASSET_PATH}" NAME_WE)
+    set(OUT_CPP "${CMAKE_CURRENT_BINARY_DIR}/embedded_${FILE_NAME}_${ASSET_VAR}.cpp")
+
+    add_custom_command(
+        OUTPUT "${OUT_CPP}"
+        COMMAND python3 "${CMAKE_CURRENT_SOURCE_DIR}/embed_file.py"
+            "${ASSET_PATH}"
+            "${OUT_CPP}"
+            "${ASSET_VAR}"
+        DEPENDS "${ASSET_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/embed_file.py"
+        COMMENT "Baking asset via Python: ${FILE_NAME} -> ${ASSET_VAR}"
+    )
+
+    list(APPEND GENERATED_SOURCES "${OUT_CPP}")
+endforeach()
+
+
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared library" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
@@ -12,6 +52,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
     add_definitions(-DGLFWSTATIC)
 
     add_executable(PAINRenderer 
+        ${GENERATED_SOURCES}
         main.cpp
         glad.c
         shader.cpp
@@ -81,6 +122,7 @@ else()
     )
 
     add_executable(PAINRenderer 
+        ${GENERATED_SOURCES}
         main.cpp
         glad.c
         shader.cpp
@@ -111,20 +153,6 @@ target_include_directories(PAINRenderer PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include 
     ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs 
     ${CMAKE_SOURCE_DIR}/lib/lib3mf/include/
-)
-
-add_custom_command(
-    TARGET PAINRenderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
-            "$<TARGET_FILE_DIR:PAINRenderer>/shaders"   
-)
-
-add_custom_command(
-    TARGET PAINRenderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/fonts"
-            "$<TARGET_FILE_DIR:PAINRenderer>/fonts"   
 )
 
 add_custom_command(

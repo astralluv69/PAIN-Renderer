@@ -8,7 +8,7 @@
 
 class Element {
     public:
-        Shader shader = Shader("shaders/elementDefault.vert", "shaders/elementDefault.frag");
+        Shader shader = Shader(elementDefaultVert, elementDefaultFrag);
         VAO elementVAO;
         VBO elementVBO = VBO(std::vector<Vertex> {});
         EBO elementEBO = EBO(std::vector<GLuint> {});

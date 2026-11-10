@@ -1,7 +1,7 @@
 #include "text_element.h"
 
 Text::Text(std::string text, glm::vec2 position, glm::vec3 color, GLuint size) {
-    initText("fonts/default.ttf", size);
+    initText(defaultFont, defaultFontLen, size);
 
     Text::text = text;
     Text::position = position;
@@ -69,12 +69,18 @@ void Text::Draw(glm::mat4 proj) {
     position.x = originalX;
 }
 
-void Text::initText(const char* fontPath, GLuint fontSize) {
+void Text::initText(const unsigned char* fontPath, size_t fontPathLen, GLuint fontSize) {
     FT_Library freetype;
     FT_Face face;
 
     FT_Init_FreeType(&freetype);
-    FT_New_Face(freetype, fontPath, 0, &face);
+    FT_New_Memory_Face(
+        freetype,
+        reinterpret_cast<const FT_Byte*>(fontPath),
+        static_cast<FT_Long>(fontPathLen),
+        0,
+        &face
+    );
 
     FT_Set_Pixel_Sizes(face, 0, fontSize);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
