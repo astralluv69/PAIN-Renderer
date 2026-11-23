@@ -23,10 +23,15 @@ struct CameraView {
     std::vector<glm::vec4> target_rgba;
 };
 
+struct CameraViewSetup {
+    const char* filepath;
+    float azimuth_deg;
+    float elevation_deg;
+};
+
 class Reconstructor {
     public:
-        static void GenerateIcosphere (int subdivisions, float radius, std::vector<glm::vec3>& out_positions, std::vector<glm::vec3>& out_colors,
-                                       std::vector<GLuint>& out_indices) {
+        static void GenerateIcosphere (int subdivisions, float radius, std::vector<ObjVertex>& out_positions, std::vector<GLuint>& out_indices) {
             const float t = (1.0f + std::sqrt(5.0f)) / 2.0f;
 
             std::vector<glm::vec3> pos = {
@@ -80,10 +85,9 @@ class Reconstructor {
                 faces = std::move(new_faces);
             }
 
-            out_positions.reserve(pos.size());
-            out_colors.assign(pos.size(), glm::vec3(0.5f));
+            out_positions.resize(pos.size());
             for (size_t i = 0; i < pos.size(); ++i) {
-                out_positions[i] = pos[i] * radius;
+                out_positions[i].position = pos[i] * radius;
             }
 
             out_indices.clear();
@@ -95,40 +99,181 @@ class Reconstructor {
             }
         }
 
-        static std::vector<glm::vec4> LoadImageRGBA (const char* filepath, int target_w, int target_h) {
-            int original_w = 0, original_h = 0, channels = 0;
+        static glm::mat4 GenerateViewProj (
+            float azimuth_deg,
+            float elevation_deg = 0.0f,
+            float fov_deg = 70.0f,
+            float aspect = 4.0f / 3.0f
+        ) {
+            float azimuth_rad = glm::radians(azimuth_deg);
+            float elevation_rad = glm::radians(elevation_deg);
 
-            unsigned char* raw_image = stbi_load(
-                filepath, &original_w, &original_h, &channels, STBI_rgb_alpha
+            glm::vec3 eye(
+                std::cos(elevation_rad) * std::sin(azimuth_rad),
+                std::sin(elevation_rad),
+                std::cos(elevation_rad) * std::cos(azimuth_rad)
             );
 
-            if (!raw_image) {
+            glm::vec3 world_up = (std::abs(elevation_deg) > 85.0f)
+                ? glm::vec3(0.0f, 0.0f, -1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+
+            glm::mat4 view = glm::lookAt(eye, glm::vec3(0.0f), world_up);
+            glm::mat4 proj = glm::perspective(glm::radians(fov_deg), aspect, 0.1f, 100.0f);
+
+            proj[0][0] *= 3.0f;
+            proj[1][1] *= 3.0f;
+
+            return proj * view;
+        }
+
+        static std::vector<glm::vec4> LoadImage (
+            const char* filepath,
+            int target_w,
+            int target_h,
+            float color_tol = 0.09f,
+            float brightness_weight = 0.2f
+        ) {
+            int original_w = 0, original_h = 0, channels = 0;
+            unsigned char* raw_img = stbi_load(
+                filepath,
+                &original_w,
+                &original_h,
+                &channels,
+                STBI_rgb_alpha
+            );
+
+            if (!raw_img) {
                 throw std::runtime_error("Failed to load image: " + std::string(filepath));
             }
 
-            std::vector<unsigned char> resized_image(target_w * target_h * 4);
-            if (original_h != target_h || original_w != target_w) {
-                stbir_resize_uint8_linear(
-                    raw_image, original_w, original_h, 0,
-                    resized_image.data(), target_w, target_h, 0, STBIR_RGBA
+            const float inv_255  = 1.0f / 255.0f;
+            std::vector<glm::vec4> img(original_w * original_h);
+            for (size_t i = 0; i < original_w * original_h; ++i) {
+                img[i] = glm::vec4(
+                    raw_img[i * 4 + 0],
+                    raw_img[i * 4 + 1],
+                    raw_img[i * 4 + 2],
+                    0.0f
                 );
-            } else {
-                resized_image.assign(raw_image, raw_image + (target_w * target_h * 4));
             }
-            stbi_image_free(raw_image);
+            stbi_image_free(raw_img);
+
+            int x_min = original_w / 3;
+            int x_max = original_w * 2 / 3;
+            int y_min = original_h / 3;
+            int y_max = original_h * 2 / 3;
+
+            std::vector<glm::vec3> border_samples;
+            int step_x = std::max(1, (x_max - x_min) / 8);
+            int step_y = std::max(1, (y_max - y_min) / 8);
+
+            for (int x = x_min; x <= x_max; x += step_x) {
+                border_samples.push_back(glm::vec3(img[y_min * original_w + x]));
+                border_samples.push_back(glm::vec3(img[y_max * original_w + x]));
+            }
+
+            for (int y = y_min; y <= y_max; y += step_y) {
+                border_samples.push_back(glm::vec3(img[y * original_h + x_min]));
+                border_samples.push_back(glm::vec3(img[y * original_h + x_max]));
+            }
+
+            std::vector<uint8_t> visited(original_w * original_h, 0);
+            std::vector<int> queue;
+            queue.reserve((x_max - x_min + 1) * (y_max - y_min + 1));
+
+            auto try_push = [&](int x, int y){
+                if (x < x_min || x > x_max || y < y_min || y > y_max) return;
+
+                int idx = y * original_w + x;
+                if (visited[idx]) return;
+
+                float min_dist = 1e9f;
+                glm::vec3 pix_rbg = glm::vec3(img[idx]);
+                for (const glm::vec3& sample : border_samples) {
+                    min_dist = std::min(
+                        min_dist,
+                        ShadowInvariantDistance(pix_rbg, sample, brightness_weight)
+                    );
+                }
+
+                if (min_dist <= color_tol) {
+                    visited[idx] = 1;
+                    queue.push_back(idx);
+                }
+            };
+
+            for (int x = x_min; x <= x_max; ++x) {
+                try_push(x, y_min);
+                try_push(x, y_max);
+            }
+
+            for (int y = y_min; y <= y_max; ++y) {
+                try_push(x_min, y);
+                try_push(x_max, y);
+            }
+
+            size_t head = 0;
+            while (head < queue.size()) {
+                int current = queue[head++];
+                int current_x = current % original_w;
+                int current_y = current / original_w;
+
+                try_push(current_x + 1, current_y);
+                try_push(current_x - 1, current_y);
+                try_push(current_x, current_y + 1);
+                try_push(current_x, current_y - 1);
+            }
+
+            for (int y = y_min; y <= y_max; ++y) {
+                for (int x = x_min; x <= x_max; ++x) {
+                    int idx = y * original_w + x;
+                    if (!visited[idx]) {
+                        img[idx].a = 1.0f;
+                    }
+                }
+            }
+
+            std::vector<float> smooth_alpha(original_w * original_h, 0.0f);
+            for (int y = std::max(1, y_min - 1); y <= std::min(original_h - 2, y_max + 1); ++y) {
+                for (int x = std::max(1, x_min - 1); x <= std::min(original_w - 2, x_max + 1); ++x) {
+                    float sum = 0.0f;
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            sum += img[(y + dy) * original_w + (x + dx)].a;
+                        }
+                    }
+                    smooth_alpha[y * original_w + x] = sum / 9.0f;
+                }
+            }
+            for (int i = 0; i < original_w * original_h; ++i) {
+                img[i].a = smooth_alpha[i];
+            }
+
+            int src_x0 = x_min;
+            int src_y0 = y_min;
+            int src_w = std::max(1, x_max - x_min);
+            int src_h = std::max(1, y_max - y_min);
 
             std::vector<glm::vec4> out_rgba(target_w * target_h);
-            const float inv_255 = 1.0f/ 255.0f;
+            for (int y = 0; y < target_h; ++y) {
+                float v = src_y0 + ((static_cast<float>(target_h - 1 - y) + 0.5f) / target_h) * src_h - 0.5f;
+                int y0 = std::clamp(static_cast<int>(std::floor(v)), 0, original_h - 1);
+                int y1 = std::min(y0 + 1, original_h - 1);
+                float fy = std::clamp(v - y0, 0.0f, 1.0f);
 
-            for (size_t y = 0; y < target_h; ++y) {
-                int src_y = target_h - 1 - y;
-                for (size_t x = 0; x < target_w; ++x) {
-                    size_t s = (src_y * target_w + x) * 4;
-                    float r = resized_image[s + 0] * inv_255;
-                    float g = resized_image[s + 1] * inv_255;
-                    float b = resized_image[s + 2] * inv_255;
-                    float a = resized_image[s + 3] * inv_255;
-                    out_rgba[y * target_w + x] = glm::vec4(r * a, g * a, b * a, a);
+                for (int x = 0; x < target_w; ++x) {
+                    float u = src_x0 + ((static_cast<float>(x) + 0.5f) / target_w) * src_w - 0.5f;
+                    int x0 = std::clamp(static_cast<int>(std::floor(u)), 0, original_w - 1);
+                    int x1 = std::min(x0 + 1, original_w - 1);
+                    float fx = std::clamp(u - x0, 0.0f, 1.0f);
+
+                    glm::vec4 c00 = img[y0 * original_w + x0];
+                    glm::vec4 c10 = img[y0 * original_w + x1];
+                    glm::vec4 c01 = img[y1 * original_w + x0];
+                    glm::vec4 c11 = img[y1 * original_w + x1];
+
+                    glm::vec4 c = glm::mix(glm::mix(c00, c10, fx), glm::mix(c01, c11, fx), fy);
+                    out_rgba[y * target_w + x] = glm::vec4(c.r * c.a, c.g * c.a, c.b * c.a, c.a);
                 }
             }
 
@@ -480,5 +625,20 @@ class Reconstructor {
                     vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
                 }
             }
+        }
+
+        static inline float ShadowInvariantDistance (const glm::vec3& rgb, const glm::vec3& bg_rgb, float brightness_weight) {
+            float sum_pix = rgb.r + rgb.g + rgb.b + 1e-4f;
+            float sum_bg = bg_rgb.r + bg_rgb.g + bg_rgb.b + 1e-4f;
+
+            glm::vec2 chroma_pix(rgb.r / sum_pix, rgb.g / sum_pix);
+            glm::vec2 chroma_bg(bg_rgb.r / sum_bg, bg_rgb.g / sum_bg);
+            float chroma_diff = glm::distance(chroma_pix, chroma_bg);
+
+            float lum_pix = glm::dot(rgb, glm::vec3(0.299f, 0.587f, 0.114f));
+            float lum_bg = glm::dot(bg_rgb, glm::vec3(0.299f, 0.587f, 0.114f));
+            float lum_diff = std::abs(lum_pix - lum_bg);
+
+            return chroma_diff + brightness_weight + lum_diff;
         }
 };

@@ -12,9 +12,6 @@
 #include "ui_element.h"
 #include "embedded_files.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
-
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 
@@ -64,6 +61,9 @@ int main(int, char**){
     bool updateMesh = false;
     std::optional<std::string> activePath = std::nullopt;
     bool willClip = false;
+    bool isGenerated = false;
+
+    std::optional<std::vector<const char*>> generationFilePaths;
 
     glfwInit();
 
@@ -162,6 +162,87 @@ int main(int, char**){
                 testModel = false;
                 updateMesh = true;
             }
+        },
+        [](){},
+        "Change File",
+        12,
+        glm::vec3(1.0f, 1.0f, 1.0f)  
+    );
+
+    ButtonElement generateModelFromImageButton(
+        "generateModelFromImageButton",
+        glm::vec2(240.0f, 0.0f),
+        glm::vec2(320.0f, 20.0f),
+        buttonColor, 
+        buttonHoverColor,
+        [&activePath, &testModel, &updateMesh, &isGenerated, &generationFilePaths](){
+            const char* acceptedFileFilters[] = {"*.png", "*.jpg", "*.jpeg"};
+
+            generationFilePaths = std::vector<const char*>(5);
+            const char* newPath = tinyfd_openFileDialog(
+                "Select the Front Photo",
+                "",
+                3,
+                acceptedFileFilters,
+                "Photo Files (*.png, *.jpg, *.jpeg)",
+                0
+            );
+            if (newPath != nullptr) {
+                generationFilePaths->push_back(newPath);
+            }
+
+            newPath = tinyfd_openFileDialog(
+                "Select the Right Photo",
+                "",
+                3,
+                acceptedFileFilters,
+                "Photo Files (*.png, *.jpg, *.jpeg)",
+                0
+            );
+            if (newPath != nullptr) {
+                generationFilePaths->push_back(newPath);
+            }
+
+            newPath = tinyfd_openFileDialog(
+                "Select the Back Photo",
+                "",
+                3,
+                acceptedFileFilters,
+                "Photo Files (*.png, *.jpg, *.jpeg)",
+                0
+            );
+            if (newPath != nullptr) {
+                generationFilePaths->push_back(newPath);
+            }
+
+            newPath = tinyfd_openFileDialog(
+                "Select the Left Photo",
+                "",
+                3,
+                acceptedFileFilters,
+                "Photo Files (*.png, *.jpg, *.jpeg)",
+                0
+            );
+            if (newPath != nullptr) {
+                generationFilePaths->push_back(newPath);
+            }
+
+            newPath = tinyfd_openFileDialog(
+                "Select the Top Photo",
+                "",
+                3,
+                acceptedFileFilters,
+                "Photo Files (*.png, *.jpg, *.jpeg)",
+                0
+            );
+            if (newPath != nullptr) {
+                generationFilePaths->push_back(newPath);
+            }
+
+            activePath = "";
+            testModel = false;
+            updateMesh = true;
+            isGenerated = true;
         },
         [](){},
         "Change File",
@@ -332,6 +413,7 @@ int main(int, char**){
     ribbon.AddElement(changeFileButton);
     ribbon.AddElement(testButton);
     ribbon.AddElement(exportFileButton);
+    ribbon.AddElement(generateModelFromImageButton);
 
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -349,13 +431,18 @@ int main(int, char**){
         }
 
         camera.updateMatrix(60.0f, 0.1f, 100.0f);
-        if(activePath.has_value() && updateMesh) {
-            objFileObj = ObjMesh(activePath->c_str(), willClip);  
+        if(activePath.has_value() && generationFilePaths.has_value() && updateMesh) {
+            if (!isGenerated) {
+                objFileObj = ObjMesh(activePath->c_str(), willClip);  
 
-            if (willClip) {
-                objModel = glm::scale(glm::translate(glm::mat4(1.0f), objPos), glm::vec3(0.01f, 0.01f, 0.01f));
+                if (willClip) {
+                    objModel = glm::scale(glm::translate(glm::mat4(1.0f), objPos), glm::vec3(0.01f, 0.01f, 0.01f));
+                } else {
+                    objModel = glm::translate(glm::mat4(1.0f), objPos);
+                }
             } else {
-                objModel = glm::translate(glm::mat4(1.0f), objPos);
+                objFileObj = ObjMesh(generationFilePaths.value());
+                isGenerated = false;
             }
 
             updateMesh = false;

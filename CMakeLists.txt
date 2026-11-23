@@ -89,6 +89,8 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
     )
 
+    target_compile_options(PAINRenderer PRIVATE -fopenmp)
+
     target_link_libraries(PAINRenderer PRIVATE 
         "${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64/libglfw3.a" 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
@@ -99,6 +101,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         OpenMP::OpenMP_CXX
         tinyfiledialogs
         opengl32 
+        gomp
         gdi32 
         user32 
         kernel32 
@@ -111,6 +114,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         shlwapi
         rpcrt4
         uuid
+        winpthread
     )
 
     target_compile_definitions(PAINRenderer PRIVATE LIB3MF_STATIC ZIP_STATIC)  
