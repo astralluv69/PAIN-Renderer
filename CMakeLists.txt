@@ -51,6 +51,8 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
 
     add_definitions(-DGLFWSTATIC)
 
+    find_package(OpenMP REQUIRED)
+
     add_executable(PAINRenderer 
         ${GENERATED_SOURCES}
         main.cpp
@@ -94,6 +96,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
         "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.a"
         "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/libzip.a"
+        OpenMP::OpenMP_CXX
         tinyfiledialogs
         opengl32 
         gdi32 

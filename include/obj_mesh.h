@@ -10,6 +10,7 @@
 #include "obj_loader.h"
 #include "stl_loader.h"
 #include "3mf_loader.h"
+#include "reconstructor.hpp"
 
 class ObjMesh {
     public:

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -12,6 +11,9 @@
 #include "obj_mesh.h"
 #include "ui_element.h"
 #include "embedded_files.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
