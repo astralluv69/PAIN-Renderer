@@ -1,3 +1,6 @@
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+
 #include "obj_mesh.h"
 
 ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
@@ -23,6 +26,58 @@ ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
     std::cout << "Indices Count: " << meshIndices.size() << std::endl;
     std::cout << "Total Triangles: " << meshIndices.size() / 3 << std::endl;
     */
+
+    meshVBO.Delete();
+    meshEBO.Delete();
+
+    VBO meshVBO(meshVertices);
+    EBO meshEBO(meshIndices);
+
+    meshVAO.Bind();
+
+    meshVBO.Bind();
+    meshEBO.Bind();
+
+    meshVAO.LinkAttrib(meshVBO, 0, 3, GL_FLOAT, sizeof(ObjVertex), 0);
+    meshVAO.LinkAttrib(meshVBO, 1, 3, GL_FLOAT, sizeof(ObjVertex), (void*)(3 * sizeof(float)));
+
+    meshVAO.Unbind();
+    meshVBO.Unbind();
+    meshEBO.Unbind();
+}
+
+ObjMesh::ObjMesh(std::vector<const char*> filepaths) {
+    int SOLVER_SIZE = 128;
+
+    Reconstructor::GenerateIcosphere(3, 0.8f, meshVertices, meshIndices);
+
+    std::vector<CameraViewSetup> setups = {
+        {filepaths[0], 0.0f, 0.0f},
+        {filepaths[1], 90.0f, 0.0f},
+        {filepaths[2], 180.0f, 0.0f},
+        {filepaths[3], 270.0f, 0.0f},
+        {filepaths[4], 0.0f, 90.0f}
+    };
+
+    std::vector<CameraView> views(setups.size());
+    for (CameraViewSetup setup : setups) {
+        CameraView view;
+        view.view_proj = Reconstructor::GenerateViewProj(
+            setup.azimuth_deg,
+            setup.elevation_deg
+        );
+
+        view.target_rgba = Reconstructor::LoadImage(
+            setup.filepath,
+            SOLVER_SIZE,
+            SOLVER_SIZE
+        );
+
+        views.push_back(view);
+    }
+
+    Reconstructor reconstructor;
+    reconstructor.Optimize(meshVertices, meshIndices, views, SOLVER_SIZE, SOLVER_SIZE);
 
     meshVBO.Delete();
     meshEBO.Delete();
