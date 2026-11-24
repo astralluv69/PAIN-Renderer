@@ -63,7 +63,7 @@ int main(int, char**){
     bool willClip = false;
     bool isGenerated = false;
 
-    std::optional<std::vector<const char*>> generationFilePaths;
+    std::optional<std::vector<std::string>> generationFilePaths;
 
     glfwInit();
 
@@ -178,65 +178,32 @@ int main(int, char**){
         [&activePath, &testModel, &updateMesh, &isGenerated, &generationFilePaths](){
             const char* acceptedFileFilters[] = {"*.png", "*.jpg", "*.jpeg"};
 
-            generationFilePaths = std::vector<const char*>(5);
-            const char* newPath = tinyfd_openFileDialog(
+            generationFilePaths = std::vector<std::string>();
+            generationFilePaths->reserve(5);
+
+            const char* prompts[] = {
                 "Select the Front Photo",
-                "",
-                3,
-                acceptedFileFilters,
-                "Photo Files (*.png, *.jpg, *.jpeg)",
-                0
-            );
-            if (newPath != nullptr) {
-                generationFilePaths->push_back(newPath);
-            }
-
-            newPath = tinyfd_openFileDialog(
                 "Select the Right Photo",
-                "",
-                3,
-                acceptedFileFilters,
-                "Photo Files (*.png, *.jpg, *.jpeg)",
-                0
-            );
-            if (newPath != nullptr) {
-                generationFilePaths->push_back(newPath);
-            }
-
-            newPath = tinyfd_openFileDialog(
                 "Select the Back Photo",
-                "",
-                3,
-                acceptedFileFilters,
-                "Photo Files (*.png, *.jpg, *.jpeg)",
-                0
-            );
-            if (newPath != nullptr) {
-                generationFilePaths->push_back(newPath);
-            }
-
-            newPath = tinyfd_openFileDialog(
                 "Select the Left Photo",
-                "",
-                3,
-                acceptedFileFilters,
-                "Photo Files (*.png, *.jpg, *.jpeg)",
-                0
-            );
-            if (newPath != nullptr) {
-                generationFilePaths->push_back(newPath);
-            }
+                "Select the Top Photo"
+            };
 
-            newPath = tinyfd_openFileDialog(
-                "Select the Top Photo",
-                "",
-                3,
-                acceptedFileFilters,
-                "Photo Files (*.png, *.jpg, *.jpeg)",
-                0
-            );
-            if (newPath != nullptr) {
-                generationFilePaths->push_back(newPath);
+            for (int i = 0; i < 5; ++i) {
+                const char* newPath = tinyfd_openFileDialog(
+                    prompts[i],
+                    "",
+                    3,
+                    acceptedFileFilters,
+                    "Photo Files (*.png, *.jpg, *.jpeg)",
+                    0
+                );
+
+                if (newPath != nullptr) {
+                    generationFilePaths->emplace_back(newPath);
+                } else {
+                    return;
+                }
             }
 
             activePath = "";
@@ -245,8 +212,8 @@ int main(int, char**){
             isGenerated = true;
         },
         [](){},
-        "Change File",
-        12,
+        "Generate Model",
+        10,
         glm::vec3(1.0f, 1.0f, 1.0f)  
     );
 
@@ -441,7 +408,7 @@ int main(int, char**){
                     objModel = glm::translate(glm::mat4(1.0f), objPos);
                 }
             } else {
-                objFileObj = ObjMesh(generationFilePaths.value());
+                objFileObj = ObjMesh(*generationFilePaths);
                 isGenerated = false;
             }
 

@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 #include <stdexcept>
+#include <future>
 
 #include "vbo.h"
 
@@ -27,6 +28,12 @@ struct CameraViewSetup {
     const char* filepath;
     float azimuth_deg;
     float elevation_deg;
+};
+
+struct ViewResult {
+    float loss = 0.0f;
+    std::vector<glm::vec3> grad_pos;
+    std::vector<glm::vec3> grad_color;
 };
 
 class Reconstructor {
@@ -102,16 +109,16 @@ class Reconstructor {
         static glm::mat4 GenerateViewProj (
             float azimuth_deg,
             float elevation_deg = 0.0f,
-            float fov_deg = 70.0f,
+            float fov_deg = 60.0f,
             float aspect = 4.0f / 3.0f
         ) {
             float azimuth_rad = glm::radians(azimuth_deg);
             float elevation_rad = glm::radians(elevation_deg);
 
             glm::vec3 eye(
-                std::cos(elevation_rad) * std::sin(azimuth_rad),
-                std::sin(elevation_rad),
-                std::cos(elevation_rad) * std::cos(azimuth_rad)
+                2.7f * std::cos(elevation_rad) * std::sin(azimuth_rad),
+                2.7f * std::sin(elevation_rad),
+                2.7f * std::cos(elevation_rad) * std::cos(azimuth_rad)
             );
 
             glm::vec3 world_up = (std::abs(elevation_deg) > 85.0f)
@@ -126,11 +133,11 @@ class Reconstructor {
             return proj * view;
         }
 
-        static std::vector<glm::vec4> LoadImage (
+        static std::vector<glm::vec4> LoadImage (   
             const char* filepath,
             int target_w,
             int target_h,
-            float color_tol = 0.09f,
+            float color_tol = 0.275f,
             float brightness_weight = 0.2f
         ) {
             int original_w = 0, original_h = 0, channels = 0;
@@ -150,18 +157,18 @@ class Reconstructor {
             std::vector<glm::vec4> img(original_w * original_h);
             for (size_t i = 0; i < original_w * original_h; ++i) {
                 img[i] = glm::vec4(
-                    raw_img[i * 4 + 0],
-                    raw_img[i * 4 + 1],
-                    raw_img[i * 4 + 2],
+                    raw_img[i * 4 + 0] * inv_255,
+                    raw_img[i * 4 + 1] * inv_255,
+                    raw_img[i * 4 + 2] * inv_255,
                     0.0f
                 );
             }
             stbi_image_free(raw_img);
 
-            int x_min = original_w / 3;
-            int x_max = original_w * 2 / 3;
-            int y_min = original_h / 3;
-            int y_max = original_h * 2 / 3;
+            int x_min = original_w / 6;
+            int x_max = original_w * 5 / 6;
+            int y_min = original_h / 6;
+            int y_max = original_h * 5 / 6;
 
             std::vector<glm::vec3> border_samples;
             int step_x = std::max(1, (x_max - x_min) / 8);
@@ -173,8 +180,8 @@ class Reconstructor {
             }
 
             for (int y = y_min; y <= y_max; y += step_y) {
-                border_samples.push_back(glm::vec3(img[y * original_h + x_min]));
-                border_samples.push_back(glm::vec3(img[y * original_h + x_max]));
+                border_samples.push_back(glm::vec3(img[y * original_w + x_min]));
+                border_samples.push_back(glm::vec3(img[y * original_w + x_max]));
             }
 
             std::vector<uint8_t> visited(original_w * original_h, 0);
@@ -277,6 +284,14 @@ class Reconstructor {
                 }
             }
 
+            int fg_pixels = 0;
+            for (glm::vec4 pixel : out_rgba) {
+                if (pixel.a > 0.5f) fg_pixels++;
+            }
+
+            std::cout << filepath << " foreground coverage: "
+                      << (100.0f * fg_pixels / (target_w * target_h)) << "%\n";
+
             return out_rgba;
         }
 
@@ -287,9 +302,9 @@ class Reconstructor {
             int image_width,
             int image_height,
             int iterations = 800,
-            float lr_position = 0.005f,
+            float lr_position = 0.0005f,
             float lr_color = 0.015f,
-            float edge_weight = 0.02f,
+            float edge_weight = 0.002f,
             float convergence_tol = 1e-6f
         ) {
             if (vertices.empty() || indices.empty() || views.empty()) {
@@ -305,7 +320,7 @@ class Reconstructor {
 
                 float sigma = glm::mix(3.0e-3f, 3.5e-4f, progress);
 
-                float lr_scale = std::max(0.1f, 0.5f * (1.0f * std::cos(3.14159265f * progress)));
+                float lr_scale = std::max(0.1f, 0.5f * (1.0f + std::cos(3.14159265f * progress)));
 
                 float loss = Step(
                     vertices,
@@ -320,10 +335,14 @@ class Reconstructor {
                 if (iter > iterations / 2 && std::abs(prev_loss - loss) < convergence_tol) break;
 
                 prev_loss = loss;
+
+                std::cout << "Progress: " << progress << "\n";
             }
 
             ComputeVertexNormals(vertices, indices);
             ClearState();
+
+            std::cout << "Finished Generating" << std::endl;
         }
 
     private: 
@@ -340,6 +359,7 @@ class Reconstructor {
             height_ = img_height;
             step_count_ = 0;
 
+            colors_.assign(num_vertices, glm::vec3(0.5f));
             m_pos_.assign(num_vertices, glm::vec3(0.0f));
             v_pos_.assign(num_vertices, glm::vec3(0.0f));
             m_color_.assign(num_vertices, glm::vec3(0.0f));
@@ -381,7 +401,7 @@ class Reconstructor {
                 depth_z[i] = ndc.z;
             }
 
-            std::vector<size_t> sorted_faces;
+            std::vector<size_t> sorted_faces(num_faces);
             for (size_t i = 0; i < num_faces; ++i) {
                 sorted_faces[i] = i;
             }
@@ -420,6 +440,64 @@ class Reconstructor {
                 int min_y = std::max(0, static_cast<int>(std::floor(std::min({vertex0.y, vertex1.y, vertex2.y}) - pad)));
                 int max_y = std::min(height_ - 1, static_cast<int>(std::ceil(std::max({vertex0.y, vertex1.y, vertex2.y}) + pad)));
 
+                float denom = sigma * width_;
+                for (int y = min_y; y <= max_y; ++y) {
+                    for (int x = min_x; x <= max_x; ++x) {
+                        glm::vec2 p(x + 0.5f, y + 0.5f);
+                        float edge0 = EdgeCross(vertex1, vertex2, p);
+                        float edge1 = EdgeCross(vertex2, vertex0, p);
+                        float edge2 = EdgeCross(vertex0, vertex1, p);
+
+                        float alpha = Sigmoid(edge0 / denom) + Sigmoid(edge1 / denom) + Sigmoid(edge2 / denom);
+                        if (alpha <= 1e-4f) continue;
+
+                        float weight0 = std::clamp(edge0 * inv_area, 0.0f, 1.0f);
+                        float weight1 = std::clamp(edge1 * inv_area, 0.0f, 1.0f);
+                        float weight2 = std::max(0.0f, 1.0f - weight0 - weight1);
+
+                        glm::vec3 tri_rgb = weight0 * colors_[idx0] + weight1 * colors_[idx1] + weight2 * colors_[idx2];
+
+                        int pix = y * width_ + x;
+                        float T = transmittance[pix];
+                        float weight = T * alpha;
+
+                        pred_rgba[pix] += glm::vec4(tri_rgb * weight, weight);
+                        transmittance[pix] = T * (1.0f - alpha);
+                    }
+                }
+            }
+
+            float loss = 0.0f;
+            std::vector<glm::vec4> dL_dpix(width_ * height_);
+            const float inv_pixels = 1.0f / float(width_ * height_);
+            for (int i = 0; i < width_ * height_; ++i) {
+                glm::vec4 diff = pred_rgba[i] - view.target_rgba[i];
+                loss += glm::dot(diff, diff);
+                dL_dpix[i] = 2.0f * diff * inv_pixels;
+            }
+
+            std::fill(transmittance.begin(), transmittance.end(), 1.0f);
+
+            for (size_t face : sorted_faces) {
+                GLuint idx0 = indices[face * 3 + 0];
+                GLuint idx1 = indices[face * 3 + 1];
+                GLuint idx2 = indices[face * 3 + 2];
+
+                glm::vec2 vertex0 = screen_xy[idx0];
+                glm::vec2 vertex1 = screen_xy[idx1];
+                glm::vec2 vertex2 = screen_xy[idx2];
+
+                float area = EdgeCross(vertex0, vertex1, vertex2);
+                if (area <= 1e-5f) continue;
+                float inv_area = 1.0f / area;
+
+                float pad = std::max(3.0f, sigma * width_ * 6.0f);
+                int min_x = std::max(0, static_cast<int>(std::floor(std::min({vertex0.x, vertex1.x, vertex2.x}) - pad)));
+                int max_x = std::min(width_ - 1, static_cast<int>(std::ceil(std::max({vertex0.x, vertex1.x, vertex2.x}) + pad)));
+                int min_y = std::max(0, static_cast<int>(std::floor(std::min({vertex0.y, vertex1.y, vertex2.y}) - pad)));
+                int max_y = std::min(height_ - 1, static_cast<int>(std::ceil(std::max({vertex0.y, vertex1.y, vertex2.y}) + pad)));
+
+                float denom = sigma * width_;
                 for (int y = min_y; y <= max_y; ++y) {
                     for (int x = min_x; x <= max_x; ++x) {
                         glm::vec2 p(x + 0.5f, y + 0.5f);
@@ -428,7 +506,6 @@ class Reconstructor {
                         float edge1 = EdgeCross(vertex2, vertex0, p);
                         float edge2 = EdgeCross(vertex0, vertex1, p);
 
-                        float denom = sigma * width_;
                         float sigmoid0 = Sigmoid(edge0 / denom);
                         float sigmoid1 = Sigmoid(edge1 / denom);
                         float sigmoid2 = Sigmoid(edge2 / denom);
@@ -449,7 +526,7 @@ class Reconstructor {
                         pred_rgba[pix] += glm::vec4(tri_rgb * weight, weight);
                         transmittance[pix] = T * (1.0f - alpha);
 
-                        glm::vec4 dL_dpix = 2.0f * (pred_rgba[pix] - view.target_rgba[pix]) / float(width_ / height_);
+                        glm::vec4 dL_dpix = 2.0f * (pred_rgba[pix] - view.target_rgba[pix]) / float(width_ * height_);
                         glm::vec3 dL_drgb(dL_dpix.r, dL_dpix.g, dL_dpix.b);
                         float dL_dalpha = glm::dot(dL_drgb, tri_rgb) * T + dL_dpix.a * T;
 
@@ -467,17 +544,17 @@ class Reconstructor {
                             ds2 * glm::vec2(vertex1.y - p.y, p.x - vertex1.x);
                     
                         glm::vec2 d_vertex1 = 
-                            ds1 * glm::vec2(p.y - vertex0.y, vertex0.x - p.x) + 
-                            ds2 * glm::vec2(vertex2.y - p.y, p.x - vertex2.x);
+                            ds2 * glm::vec2(p.y - vertex0.y, vertex0.x - p.x) + 
+                            ds0 * glm::vec2(vertex2.y - p.y, p.x - vertex2.x);
 
                         glm::vec2 d_vertex2 = 
-                            ds1 * glm::vec2(p.y - vertex1.y, vertex1.x - p.x) + 
-                            ds2 * glm::vec2(vertex0.y - p.y, p.x - vertex0.x);
+                            ds0 * glm::vec2(p.y - vertex1.y, vertex1.x - p.x) + 
+                            ds1 * glm::vec2(vertex0.y - p.y, p.x - vertex0.x);
 
                         auto unproject_grad = [&](GLuint vertex_idx, glm::vec2 g2d) {
                             glm::vec4 g_ndc(
-                                g2d.x * width_ * 0.5f * inv_w[vertex_idx],
-                                g2d.y * height_ * 0.5f * inv_w[vertex_idx],
+                                (g2d.x * 2.0f / static_cast<float>(width_)) * inv_w[vertex_idx],
+                                (g2d.y * 2.0f / static_cast<float>(height_)) * inv_w[vertex_idx],
                                 0.0f,
                                 0.0f
                             );
@@ -489,12 +566,6 @@ class Reconstructor {
                         unproject_grad(idx2, d_vertex2);
                     }
                 }
-            }
-
-            float loss = 0.0f;
-            for (int i = 0; i < width_ * height_; ++i) {
-                glm::vec4 diff = pred_rgba[i] - view.target_rgba[i];
-                loss = glm::dot(diff, diff);
             }
 
             return loss / float(width_ * height_);
@@ -509,36 +580,44 @@ class Reconstructor {
             float lr_color = 0.015f,
             float edge_weight = 0.02f
         ) {
+            if (m_pos_.size() != vertices.size() || colors_.size() != vertices.size()) {
+                Init(vertices.size(), width_, height_);
+            }      
+
             const size_t num_vertices = vertices.size();
             std::vector<glm::vec3> total_grad_positions(num_vertices, glm::vec3(0.0f));
             std::vector<glm::vec3> total_grad_colors(num_vertices, glm::vec3(0.0f));
             float total_loss = 0.0f;
 
-            #pragma omp parallel 
-            {
-                std::vector<glm::vec3> local_grad_positions(num_vertices, glm::vec3(0.0f));
-                std::vector<glm::vec3> local_grad_colors(num_vertices, glm::vec3(0.0f));
-                float local_loss = 0.0f;
+            std::vector<glm::vec3> local_grad_pos(num_vertices, glm::vec3(0.0f));
+            std::vector<glm::vec3> local_grad_col(num_vertices, glm::vec3(0.0f));
 
-                #pragma omp for nowait
-                for (int view = 0; view < views.size(); ++view) {
-                    local_loss += ComputeViewGradients(
+            std::vector<std::future<ViewResult>> futures;
+            futures.reserve(views.size());
+
+            for (size_t v = 0; v < views.size(); ++v) {
+                futures.push_back(std::async(std::launch::async, [&, v]() -> ViewResult {
+                    ViewResult result;
+                    result.grad_pos.assign(num_vertices, glm::vec3(0.0f));
+                    result.grad_color.assign(num_vertices, glm::vec3(0.0f));
+                    result.loss = ComputeViewGradients(
                         vertices,
                         indices,
-                        views[view],
-                        local_grad_positions,
-                        local_grad_colors,
+                        views[v],
+                        result.grad_pos,
+                        result.grad_color,
                         sigma
                     );
-                }
+                    return result;
+                }));
+            }
 
-                #pragma omp critical 
-                {
-                    total_loss += local_loss;
-                    for (size_t i = 0; i < num_vertices; ++i) {
-                        total_grad_positions[i] += local_grad_positions[i];
-                        total_grad_positions[i] += local_grad_colors[i];
-                    }
+            for (auto& future : futures) {
+                ViewResult res = future.get();
+                total_loss += res.loss;
+                for (size_t i = 0; i < num_vertices; ++i) {
+                    total_grad_positions[i] += res.grad_pos[i];
+                    total_grad_colors[i] += res.grad_color[i];
                 }
             }
 
@@ -549,18 +628,29 @@ class Reconstructor {
                 total_grad_colors[i] *= inv_views;
             }
 
-            for (size_t i = 0; i < indices.size(); ++i) {
+            std::vector<glm::vec3> neighbor_sum(num_vertices, glm::vec3(0.0f));
+            std::vector<int> neighbor_count(num_vertices, 0);
+
+            for (size_t i = 0; i + 2 < indices.size(); i += 3) {
                 GLuint idx0 = indices[i + 0];
                 GLuint idx1 = indices[i + 1];
                 GLuint idx2 = indices[i + 2];
 
-                glm::vec3 edge01 = vertices[idx1].position - vertices[idx0].position;
-                glm::vec3 edge12 = vertices[idx2].position - vertices[idx1].position;
-                glm::vec3 edge20 = vertices[idx0].position - vertices[idx2].position;
+                neighbor_sum[idx0] += vertices[idx1].position + vertices[idx2].position;
+                neighbor_count[idx0] += 2;
 
-                total_grad_positions[idx0] += edge_weight * (edge20 - edge01);
-                total_grad_positions[idx1] += edge_weight * (edge01 - edge12);
-                total_grad_positions[idx2] += edge_weight * (edge12 - edge20);
+                neighbor_sum[idx1] += vertices[idx0].position + vertices[idx2].position;
+                neighbor_count[idx1] += 2;
+
+                neighbor_sum[idx2] += vertices[idx0].position + vertices[idx1].position;
+                neighbor_count[idx2] += 2;
+            }
+
+            for (size_t i = 0; i < num_vertices; ++i) {
+                if (neighbor_count[i] > 0) {
+                    glm::vec3 centroid = neighbor_sum[i] / static_cast<float>(neighbor_count[i]);
+                    total_grad_positions[i] += edge_weight * (vertices[i].position - centroid);
+                }
             }
 
             step_count_++;
@@ -603,14 +693,14 @@ class Reconstructor {
                 vertex.normal = glm::vec3(0.0f);
             }
 
-            for (size_t i = 0; i + 2 < indices.size(); i += 3) {
-                GLuint idx0 = indices[i + 0];
-                GLuint idx1 = indices[i + 1];
-                GLuint idx2 = indices[i + 2];
+            for (size_t t = 0; t + 2 < indices.size(); t += 3) {
+                GLuint idx0 = indices[t + 0];
+                GLuint idx1 = indices[t + 1];
+                GLuint idx2 = indices[t + 2];
 
-                glm::vec3 edge0 = vertices[idx1].position + vertices[idx0].position;
-                glm::vec3 edge1 = vertices[idx2].position + vertices[idx0].position;
-                glm::vec3 face_normal = glm::cross(edge0, edge1);
+                glm::vec3 edge1 = vertices[idx1].position - vertices[idx0].position;
+                glm::vec3 edge2 = vertices[idx2].position - vertices[idx0].position;
+                glm::vec3 face_normal = glm::cross(edge1, edge2);
 
                 vertices[idx0].normal += face_normal;
                 vertices[idx1].normal += face_normal;
@@ -619,11 +709,7 @@ class Reconstructor {
 
             for (ObjVertex& vertex : vertices) {
                 float len = glm::length(vertex.normal);
-                if (len > 1e-8f) {
-                    vertex.normal /= len;
-                } else {
-                    vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
-                }
+                vertex.normal = (len > 1e-8f) ? (vertex.normal / len) : glm::vec3(0.0f, 1.0f, 0.0f);
             }
         }
 

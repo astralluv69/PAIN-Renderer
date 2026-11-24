@@ -51,8 +51,6 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
 
     add_definitions(-DGLFWSTATIC)
 
-    find_package(OpenMP REQUIRED)
-
     add_executable(PAINRenderer 
         ${GENERATED_SOURCES}
         main.cpp
@@ -89,8 +87,6 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         ${CMAKE_SOURCE_DIR}/lib/tinyfiledialogs/tinyfiledialogs.h
     )
 
-    target_compile_options(PAINRenderer PRIVATE -fopenmp)
-
     target_link_libraries(PAINRenderer PRIVATE 
         "${CMAKE_SOURCE_DIR}/lib/glfw/lib-mingw-w64/libglfw3.a" 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libfreetype_stripped.a"
@@ -98,10 +94,8 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND ${CMAKE_SYSTEM_NAME} STREQUAL 
         "${CMAKE_SOURCE_DIR}/lib/freetype/lib/libbz2.a" 
         "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/lib3mf.a"
         "${CMAKE_SOURCE_DIR}/lib/lib3mf/lib/libzip.a"
-        OpenMP::OpenMP_CXX
         tinyfiledialogs
-        opengl32 
-        gomp
+        opengl32
         gdi32 
         user32 
         kernel32 
@@ -167,4 +161,11 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/models"
             "$<TARGET_FILE_DIR:PAINRenderer>/models"   
+)
+
+add_custom_command(
+    TARGET PAINRenderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/test_imgs"
+            "$<TARGET_FILE_DIR:PAINRenderer>/test_imgs"
 )

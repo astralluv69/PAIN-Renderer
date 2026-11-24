@@ -23,7 +23,7 @@ class ObjMesh {
         EBO meshEBO = EBO(meshIndices);
 
         ObjMesh(const char* filepath, bool& willClip);
-        ObjMesh(std::vector<const char*> filepaths);
+        ObjMesh(const std::vector<std::string>& filepaths);
 
         void Draw(Shader& shader, Camera& camera, glm::mat4 model);
         void DrawWireframe(Shader& shader, Camera& camera, glm::mat4 model);

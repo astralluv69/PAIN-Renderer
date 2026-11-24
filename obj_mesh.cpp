@@ -46,20 +46,20 @@ ObjMesh::ObjMesh(const char* filepath, bool& willClip) {
     meshEBO.Unbind();
 }
 
-ObjMesh::ObjMesh(std::vector<const char*> filepaths) {
+ObjMesh::ObjMesh(const std::vector<std::string>& filepaths) {
     int SOLVER_SIZE = 128;
 
     Reconstructor::GenerateIcosphere(3, 0.8f, meshVertices, meshIndices);
 
     std::vector<CameraViewSetup> setups = {
-        {filepaths[0], 0.0f, 0.0f},
-        {filepaths[1], 90.0f, 0.0f},
-        {filepaths[2], 180.0f, 0.0f},
-        {filepaths[3], 270.0f, 0.0f},
-        {filepaths[4], 0.0f, 90.0f}
+        {filepaths[0].c_str(), 0.0f, 0.0f},
+        {filepaths[1].c_str(), 90.0f, 0.0f},
+        {filepaths[2].c_str(), 180.0f, 0.0f},
+        {filepaths[3].c_str(), 270.0f, 0.0f},
+        {filepaths[4].c_str(), 0.0f, 90.0f}
     };
 
-    std::vector<CameraView> views(setups.size());
+    std::vector<CameraView> views;
     for (CameraViewSetup setup : setups) {
         CameraView view;
         view.view_proj = Reconstructor::GenerateViewProj(
