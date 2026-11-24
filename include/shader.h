@@ -22,6 +22,7 @@ class Shader {
         void Deactivate();
         void Delete();
         void loadLightColorAndPos(glm::vec3 lightColor, glm::vec3 lightPos);
+        
 };
 
 #endif
